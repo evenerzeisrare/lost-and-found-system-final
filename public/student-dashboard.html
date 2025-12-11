@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - CSU Lost & Found</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* Dashboard specific styles */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-message h1 {
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .welcome-message p {
+            color: var(--gray);
+        }
+        
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+        
+        .notification-bell:hover {
+            background-color: rgba(46, 125, 50, 0.1);
+            color: var(--primary);
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .red-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #F44336;
+            border-radius: 50%;
+            margin-left: 6px;
+        }
+
+        .message-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #fff;
+        }
+        .message-item.unread {
+            border-color: #ffb3b3;
+            background: #fff8f8;
+        }
+        .message-content {
+            color: #333;
+            margin-top: 6px;
+        }
+        
+        .page-content {
+            display: none;
+        }
+        
+        .page-content.active {
+            display: block;
+        }
+        
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .item-card {
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .item-image {
+            height: 180px;
+            overflow: hidden;
+        }
+        
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .item-card:hover .item-image img {
+            transform: scale(1.05);
+        }
+        
+        .item-details {
+            padding: 15px;
+        }
+        
+        .item-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        
+        .item-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .item-category {
+            background-color: rgba(46, 125, 50, 0.1);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        
+        .item-description {
+            color: var(--dark);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .item-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .messages-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .chat-window {
+            border: 1px solid #eee;
+            border-radius: var(--radius);
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        
+        .message-bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            clear: both;
+        }
+        
+        .message-bubble.sent {
+            background-color: var(--primary);
+            color: white;
+            float: right;
+        }
+        
+        .message-bubble.received {
+            background-color: #f0f0f0;
+            color: var(--dark);
+            float: left;
+        }
+        
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+        
+        .search-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .search-box {
+            flex: 1;
+            position: relative;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid #ddd;
+            border-radius: var(--radius);
+        }
+        
+        .filter-select {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--radius);
+            background: white;
+            min-width: 150px;
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+        
+        .profile-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .profile-name {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .profile-email {
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+        
+        .profile-id {
+            color: var(--dark);
+            font-weight: 500;
+        }
+        
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .profile-stat {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        
+        .tab:hover {
+            color: var(--primary);
+            background-color: rgba(46, 125, 50, 0.05);
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Mobile menu toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary);
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                background: white;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                box-shadow: var(--shadow);
+                z-index: 99;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-filter {
+                flex-direction: column;
+            }
+            
+            .profile-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="navbar">
+                <div class="logo-section">
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <a href="/student-dashboard.html" class="logo">
+                        <img src="./assets/img/csu-logo.png" alt="CSU Logo" onerror="this.style.display='none'">
+                        <span>CSU Lost & Found</span>
+                    </a>
+                </div>
+                
+                <div class="nav-links" id="navLinks">
+                    <a href="#" class="nav-link active" data-page="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </a>
+                    <a href="#" class="nav-link" data-page="browse">
+                        <i class="fas fa-search"></i>
+                        Browse Items
+                    </a>
+                    <a href="#" class="nav-link" data-page="my-items">
+                        <i class="fas fa-box"></i>
+                        My Items
+                    </a>
+                    <a href="#" class="nav-link" data-page="messages">
+                        <i class="fas fa-comments"></i>
+                        Messages
+                        <span class="notification-badge" id="messageBadge" style="display: none;">0</span>
+                    </a>
+                    <a href="#" class="nav-link" data-page="announcements">
+                        <i class="fas fa-bullhorn"></i>
+                        Announcements
+                    </a>
+                    <a href="#" class="nav-link" data-page="profile">
+                        <i class="fas fa-user"></i>
+                        My Profile
+                    </a>
+                </div>
+                
+                <div class="user-actions">
+                    <div class="notification-bell" id="notificationBell">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationBadge">0</span>
+                    </div>
+                    <button class="btn btn-outline" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Dashboard Page -->
+        <div id="dashboardPage" class="page-content active">
+            <div class="dashboard-header">
+                <div class="welcome-message">
+                    <h1>Welcome, <span id="userName">Student</span>!</h1>
+                    <p>Here's what's happening with your lost and found items</p>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="reportLostBtn">
+                        <i class="fas fa-plus"></i> Report Lost Item
+                    </button>
+                    <button class="btn btn-secondary" id="reportFoundBtn">
+                        <i class="fas fa-plus"></i> Report Found Item
+                    </button>
+                </div>
+            </div>
+            
+            
+            
+            <!-- Recent Announcements -->
+            <div class="card">
+                <h2 style="margin-bottom: 20px; color: var(--primary);">
+                    <i class="fas fa-bullhorn"></i> Recent Announcements
+                </h2>
+                <div id="announcementsList">
+                    <!-- Announcements will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Recent Items -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: var(--primary);">
+                        <i class="fas fa-history"></i> Recently Lost & Found
+                    </h2>
+                    <a href="#" class="btn btn-outline btn-small" data-page="browse">
+                        View All <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="items-grid" id="recentItemsGrid">
+                    <!-- Items will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Browse Items Page -->
+        <div id="browsePage" class="page-content">
+            <div class="dashboard-header">
+                <h1 style="color: var(--primary);">Browse Items</h1>
+                <div class="search-filter">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search items...">
+                    </div>
+                    <select class="filter-select" id="categoryFilter">
+                        <option value="all">All Categories</option>
+                        <option value="gadgets">Gadgets</option>
+                        <option value="accessories">Accessories</option>
+                        <option value="ids">IDs & Cards</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="books">Books</option>
+                        <option value="others">Others</option>
+                    </select>
+                    <select class="filter-select" id="statusFilter">
+                        <option value="all">All Status</option>
+                        <option value="lost">Lost</option>
+                        <option value="found">Found</option>
+                    </select>
+                </div>
+            </div>
+            <div class="items-grid" id="browseItemsGrid">
+                <!-- Items will be loaded here -->
+            </div>
+        </div>
+
+        <!-- My Items Page -->
+        <div id="my-itemsPage" class="page-content">
+            <div class="dashboard-header">
+                <h1 style="color: var(--primary);">My Items</h1>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="myReportLostBtn">
+                        <i class="fas fa-plus"></i> Report Lost
+                    </button>
+                    <button class="btn btn-secondary" id="myReportFoundBtn">
+                        <i class="fas fa-plus"></i> Report Found
+                    </button>
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="all">All Items</div>
+                <div class="tab" data-tab="pending">Pending</div>
+                <div class="tab" data-tab="claimed">Claimed</div>
+            </div>
+            
+            <div class="tab-content active" id="tabAll">
+                <div class="items-grid" id="myItemsGridAll">
+                    <!-- All items will be loaded here -->
+                </div>
+            </div>
+            
+            <div class="tab-content" id="tabPending">
+                <div class="items-grid" id="myItemsGridPending">
+                    <!-- Pending items will be loaded here -->
+                </div>
+            </div>
+            
+            
+            
+            <div class="tab-content" id="tabClaimed">
+                <div class="items-grid" id="myItemsGridClaimed">
+                    <!-- Claimed items will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+    <!-- Messages Page -->
+    <div id="messagesPage" class="page-content">
+        <div class="dashboard-header">
+            <h1 style="color: var(--primary);">Messages</h1>
+            <button class="btn btn-danger" id="deleteAllMessagesBtn">
+                <i class="fas fa-trash"></i> Delete All
+            </button>
+        </div>
+        
+        <div class="card">
+            <div class="messages-container" id="messagesList">
+                <!-- Messages will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+        <!-- Announcements Page -->
+        <div id="announcementsPage" class="page-content">
+            <div class="dashboard-header">
+                <h1 style="color: var(--primary);">Announcements</h1>
+            </div>
+            
+            <div class="card">
+                <div id="allAnnouncementsList">
+                    <!-- All announcements will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="profilePage" class="page-content">
+            <div class="dashboard-header">
+                <h1 style="color: var(--primary);">My Profile</h1>
+            </div>
+            
+            <div class="card">
+                <div class="profile-avatar" id="profileAvatar">S</div>
+                <img id="profileAvatarImg" alt="Profile Image" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: none;" onerror="this.style.display='none'">
+                <div class="profile-info">
+                    <div class="profile-name" id="profileName">Student Name</div>
+                    <div class="profile-email" id="profileEmail">email@carsu.edu.ph</div>
+                    <div class="profile-id" id="profileStudentId">Student ID: Not set</div>
+                </div>
+                
+                
+                
+                <h3 style="margin: 30px 0 20px; color: var(--primary);">Update Profile</h3>
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="profileEmailInput">Email (read-only)</label>
+                        <input type="email" id="profileEmailInput" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileImage">Profile Image</label>
+                        <input type="file" id="profileImage" accept="image/*" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input type="tel" id="phoneNumber" class="form-control" placeholder="Enter your phone number" pattern="^[0-9+()\-\s]{7,20}$" maxlength="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="studentId">Student ID</label>
+                        <input type="text" id="studentId" class="form-control" placeholder="Enter your student ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="contactMethod">Preferred Contact Method</label>
+                        <select id="contactMethod" class="form-control">
+                            <option value="email">Email</option>
+                            <option value="phone">Phone</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Update Profile
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Item Modal -->
+    <div class="modal" id="reportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Report Item</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="reportForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="itemName">Item Name *</label>
+                        <input type="text" id="itemName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemCategory">Category *</label>
+                        <select id="itemCategory" class="form-control" required>
+                            <option value="">Select Category</option>
+                            <option value="gadgets">Gadgets</option>
+                            <option value="accessories">Accessories</option>
+                            <option value="ids">IDs & Cards</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="books">Books</option>
+                            <option value="others">Others</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemDescription">Description *</label>
+                        <textarea id="itemDescription" class="form-control" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemPlace">Place *</label>
+                        <input type="text" id="itemPlace" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemDate">Date *</label>
+                        <input type="date" id="itemDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Upload Image (Optional)</label>
+                        <div class="image-upload" onclick="document.getElementById('itemImage').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload image</p>
+                            <p class="file-info">Max 5MB • JPG, PNG, GIF</p>
+                            <input type="file" id="itemImage" accept="image/*" style="display: none;">
+                        </div>
+                        <div id="imagePreview" style="display: none;">
+                            <img id="previewImage" src="" alt="Preview" style="max-width: 100%; margin-top: 10px; border-radius: var(--radius);">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactInfo">Contact Information *</label>
+                        <input type="text" id="contactInfo" class="form-control" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelReport">Cancel</button>
+                <button class="btn btn-primary" id="submitReport">Submit Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Item Detail Modal -->
+    <div class="modal" id="itemDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Item Details</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 20px;">
+                    <div style="flex: 1;">
+                        <img id="detailImage" src="" alt="Item Image" style="width: 100%; border-radius: var(--radius);">
+                        <div id="claimRequirementNotice" style="display:none; background:#FFF7E6; color:#8A6100; padding:10px; border-radius:8px; margin-top:10px; font-size:0.9rem;">
+                            Submit image proof so the owner of the item can verify ownership.
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <h3 id="detailName" style="color: var(--primary); margin-bottom: 15px;"></h3>
+                        <div class="detail-row">
+                            <strong>Category:</strong> <span id="detailCategory"></span>
+                        </div>
+                        <div class="detail-row">
+                            <strong>Place:</strong> <span id="detailPlace"></span>
+                        </div>
+                        <div class="detail-row">
+                            <strong>Status:</strong> <span id="detailStatus" class="status-badge"></span>
+                        </div>
+                        <div class="detail-row">
+                            <strong>Date Reported:</strong> <span id="detailDate"></span>
+                        </div>
+                        <div class="detail-row">
+                            <strong>Reported By:</strong> <span id="detailReporter"></span>
+                        </div>
+                        <div class="detail-row">
+                            <strong>Description:</strong> <p id="detailDescription" style="margin-top: 5px;"></p>
+                        </div>
+                        <div class="detail-row">
+                            <strong>Contact:</strong> <span id="detailContact"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="sendMessageBtn" title="Chat with the reporter">
+                    <i class="fas fa-comment"></i> Send Message
+                </button>
+                <button class="btn btn-secondary" id="submitClaimProofBtn" title="Upload image proof for owner verification">
+                    <i class="fas fa-file-upload"></i> Send Proof
+                </button>
+                <button class="btn btn-outline" id="markClaimedByOwnerBtn" style="display:none;">
+                    <i class="fas fa-check"></i> Claimed by the owner
+                </button>
+                <button class="btn btn-outline" id="markReturnedByOwnerBtn" style="display:none;">
+                    <i class="fas fa-undo"></i> Returned by the owner
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Message Modal -->
+    <div class="modal" id="messageModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Send Message</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="messageForm">
+                    <div class="form-group">
+                        <label for="messageReceiver">To:</label>
+                        <input type="text" id="messageReceiver" class="form-control" readonly>
+                        <input type="hidden" id="receiverId">
+                        <input type="hidden" id="itemId">
+                    </div>
+                    <div class="form-group">
+                        <label for="messageContent">Message:</label>
+                        <textarea id="messageContent" class="form-control" rows="5" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="messageImage">Attach Image (optional)</label>
+                        <input type="file" id="messageImage" accept="image/*" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelMessage">Cancel</button>
+                <button class="btn btn-primary" id="sendMessage">Send Message</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div class="modal" id="chatModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 id="chatTitle">Chat</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body" style="display:flex;flex-direction:column;gap:10px;">
+                <div id="chatMessages" style="max-height: 400px; overflow-y: auto; padding: 10px; background: #f9fafb; border-radius: var(--radius);"></div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <input type="text" id="chatInput" class="form-control" placeholder="Type a message..." style="flex:1;min-width:200px;" />
+                    <input type="file" id="chatImage" accept="image/*" />
+                    <button class="btn btn-primary" id="sendChatBtn">
+                        <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                </div>
+                <input type="hidden" id="chatReceiverId" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div class="modal" id="editItemModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Item</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editItemForm" enctype="multipart/form-data">
+                    <input type="hidden" id="editItemId">
+                    <div class="form-group">
+                        <label for="editItemName">Item Name *</label>
+                        <input type="text" id="editItemName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editItemCategory">Category *</label>
+                        <select id="editItemCategory" class="form-control" required>
+                            <option value="gadgets">Gadgets</option>
+                            <option value="accessories">Accessories</option>
+                            <option value="ids">IDs & Cards</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="books">Books</option>
+                            <option value="others">Others</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editItemDescription">Description *</label>
+                        <textarea id="editItemDescription" class="form-control" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editItemPlace">Place *</label>
+                        <input type="text" id="editItemPlace" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editItemDate">Date *</label>
+                        <input type="date" id="editItemDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editItemStatus">Status *</label>
+                        <select id="editItemStatus" class="form-control" required>
+                            <option value="lost">Lost</option>
+                            <option value="found">Found</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Replace Image (Optional)</label>
+                        <input type="file" id="editItemImage" accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label for="editContactInfo">Contact Information *</label>
+                        <input type="text" id="editContactInfo" class="form-control" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelEditItem">Cancel</button>
+                <button class="btn btn-primary" id="submitEditItem">Save Changes</button>
+            </div>
+        </div>
+</div>
+
+    <!-- Claim Proof Modal -->
+    <div class="modal" id="claimProofModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Submit Claim Proof</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="claimProofItemId" />
+                <div class="form-group">
+                    <label for="claimProofClaimerName">Name of Claimer *</label>
+                    <input type="text" id="claimProofClaimerName" class="form-control" placeholder="Enter the name of the person who claimed" required />
+                </div>
+                <div class="form-group">
+                    <label for="claimProofNote">Note (optional)</label>
+                    <input type="text" id="claimProofNote" class="form-control" placeholder="Add a note" />
+                </div>
+                <div class="form-group">
+                    <label for="claimProofFile">Upload proof image (required)</label>
+                    <input type="file" id="claimProofFile" accept="image/*" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelClaimProof">Cancel</button>
+                <button class="btn btn-primary" id="submitClaimProof">Submit Proof</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="modal" id="notificationsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Notifications</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="notificationsList">
+                    <!-- Notifications will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="markAllRead">Mark All as Read</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/student-dashboard.js"></script>
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobileMenuToggle').addEventListener('click', function() {
+            document.getElementById('navLinks').classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const navLinks = document.getElementById('navLinks');
+            const menuToggle = document.getElementById('mobileMenuToggle');
+            
+            if (!navLinks.contains(event.target) && !menuToggle.contains(event.target) && window.innerWidth <= 768) {
+                navLinks.classList.remove('active');
+            }
+        });
+        // Edit item modal actions
+        document.getElementById('cancelEditItem').addEventListener('click', function() {
+            document.getElementById('editItemModal').style.display = 'none';
+        });
+        document.getElementById('submitEditItem').addEventListener('click', function() {
+            const dashboard = window.__dashboardInstance;
+            if (dashboard) {
+                dashboard.submitEditItem();
+            }
+        });
+        document.getElementById('sendChatBtn').addEventListener('click', function() {
+            const dashboard = window.__dashboardInstance;
+            if (dashboard) {
+                dashboard.sendChatMessage();
+            }
+        });
+        document.getElementById('cancelClaimProof')?.addEventListener('click', function() {
+            const modal = document.getElementById('claimProofModal');
+            if (modal) modal.style.display = 'none';
+        });
+        document.getElementById('submitClaimProof')?.addEventListener('click', function() {
+            const dashboard = window.__dashboardInstance;
+            if (dashboard) {
+                dashboard.submitClaimProof();
+            }
+        });
+    </script>
+</body>
+</html>

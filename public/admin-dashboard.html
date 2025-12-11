@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSU Lost & Found - Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* Admin Dashboard Specific Styles */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .page-title {
+            color: var(--primary);
+            margin: 0;
+        }
+        
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .stat-trend {
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin: 10px 0 5px;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .stat-card:nth-child(2) .stat-icon { background: linear-gradient(135deg, #4CAF50, #2E7D32); }
+        .stat-card:nth-child(3) .stat-icon { background: linear-gradient(135deg, #2196F3, #0D47A1); }
+        .stat-card:nth-child(4) .stat-icon { background: linear-gradient(135deg, #FF9800, #EF6C00); }
+        .stat-card:nth-child(5) .stat-icon { background: linear-gradient(135deg, #9C27B0, #6A1B9A); }
+        .stat-card:nth-child(6) .stat-icon { background: linear-gradient(135deg, #F44336, #C62828); }
+        .stat-card:nth-child(7) .stat-icon { background: linear-gradient(135deg, #607D8B, #37474F); }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .action-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+        
+        .action-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .action-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(46, 125, 50, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+        }
+        
+        .action-title {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+        
+        .action-desc {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        
+        .content-tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        
+        .content-tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .content-tab:hover {
+            color: var(--primary);
+            background-color: rgba(46, 125, 50, 0.05);
+        }
+        
+        .content-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .search-filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid #ddd;
+            border-radius: var(--radius);
+            font-size: 1rem;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+        
+        .filter-select {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--radius);
+            background: white;
+            min-width: 150px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        
+        .data-table th {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .data-table tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        
+        .btn-icon.approve {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-icon.edit {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-icon.delete {
+            background: #F44336;
+            color: white;
+        }
+        
+        .btn-icon.view {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .btn-icon:hover {
+            opacity: 0.9;
+            transform: scale(1.1);
+        }
+        
+        .user-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .announcement-item {
+            border: 1px solid #eee;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 15px;
+            background: white;
+            box-shadow: var(--shadow);
+        }
+        
+        .announcement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .announcement-title {
+            font-weight: 600;
+            color: var(--primary-dark);
+            font-size: 1.1rem;
+        }
+        
+        .announcement-meta {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 10px;
+        }
+        
+        .announcement-content {
+            line-height: 1.6;
+        }
+        
+        .create-announcement-form {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .message-item {
+            border: 1px solid #eee;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 15px;
+            background: white;
+            box-shadow: var(--shadow);
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .message-participants {
+            flex: 1;
+        }
+        
+        .message-from {
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+        
+        .message-to {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .message-content {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: var(--radius);
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+        
+        .message-reason {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            color: #856404;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .page-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid #ddd;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .page-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .page-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        /* Modal Styles */
+        .modal-large .modal-content {
+            max-width: 800px;
+        }
+        
+        .item-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .detail-group {
+            margin-bottom: 15px;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .detail-value {
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: var(--radius);
+            border: 1px solid #eee;
+        }
+        
+        .detail-image {
+            max-width: 100%;
+            border-radius: var(--radius);
+            margin-top: 10px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .item-details-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .data-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .admin-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-filter-bar {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="navbar">
+                <div class="logo-section">
+                    <a href="/admin-dashboard.html" class="logo">
+                        <img src="./assets/img/csu-logo.png" alt="CSU Logo" onerror="this.style.display='none'">
+                        <span>CSU Lost & Found - Admin</span>
+                    </a>
+                </div>
+                
+                <div class="user-actions">
+                    <div class="notification-bell" id="notificationBell">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationBadge">0</span>
+                    </div>
+                    <div class="user-info" style="display: flex; align-items: center; gap: 10px;">
+                        <div class="user-avatar-small" id="adminAvatar" 
+                             style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary); 
+                                    color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                            A
+                        </div>
+                        <div>
+                            <div class="user-name" id="adminName" style="font-weight: 600;">Admin</div>
+                            <div class="user-role" style="font-size: 0.8rem; color: var(--gray);">Administrator</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <div class="nav-links" id="navLinks">
+                <a href="#" class="nav-link active" data-tab="dashboard">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="#" class="nav-link" data-tab="items">
+                    <i class="fas fa-box"></i> Manage Items
+                </a>
+                <a href="#" class="nav-link" data-tab="users">
+                    <i class="fas fa-users"></i> Manage Users
+                </a>
+                <a href="#" class="nav-link" data-tab="messages">
+                    <i class="fas fa-comments"></i> Reported Messages
+                </a>
+                <a href="#" class="nav-link" data-tab="announcements">
+                    <i class="fas fa-bullhorn"></i> Announcements
+                </a>
+                
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Dashboard Tab -->
+        <div id="dashboardTab" class="tab-content active">
+            <div class="dashboard-header">
+                <h1 class="page-title">Admin Dashboard</h1>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="refreshData">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-trend" id="pendingTrend">+12%</div>
+                    </div>
+                    <div class="stat-value" id="pendingCount">0</div>
+                    <div class="stat-label">Pending Verification</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-trend" id="readyTrend">+8%</div>
+                    </div>
+                    <div class="stat-value" id="readyCount">0</div>
+                    <div class="stat-label">Ready for Claim</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <div class="stat-trend" id="claimedTrend">+15%</div>
+                    </div>
+                    <div class="stat-value" id="claimedCount">0</div>
+                    <div class="stat-label">Claimed This Month</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="stat-trend" id="unresolvedTrend">-5%</div>
+                    </div>
+                    <div class="stat-value" id="unresolvedCount">0</div>
+                    <div class="stat-label">Unresolved Reports</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-comment-slash"></i>
+                        </div>
+                        <div class="stat-trend" id="reportedTrend">+3%</div>
+                    </div>
+                    <div class="stat-value" id="reportedCount">0</div>
+                    <div class="stat-label">Reported Messages</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-slash"></i>
+                        </div>
+                        <div class="stat-trend" id="inactiveTrend">+2%</div>
+                    </div>
+                    <div class="stat-value" id="inactiveCount">0</div>
+                    <div class="stat-label">Inactive Users</div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <h2 style="margin: 30px 0 20px; color: var(--primary);">
+                <i class="fas fa-bolt"></i> Quick Actions
+            </h2>
+            <div class="quick-actions">
+                <div class="action-card" data-action="verify">
+                    <div class="action-icon">
+                        <i class="fas fa-check-double"></i>
+                    </div>
+                    <div class="action-title">Verify Reports</div>
+                    <div class="action-desc">Review pending item reports</div>
+                </div>
+                
+                <div class="action-card" data-action="users">
+                    <div class="action-icon">
+                        <i class="fas fa-user-cog"></i>
+                    </div>
+                    <div class="action-title">Manage Users</div>
+                    <div class="action-desc">Activate/deactivate users</div>
+                </div>
+                
+                <div class="action-card" data-action="messages">
+                    <div class="action-icon">
+                        <i class="fas fa-flag"></i>
+                    </div>
+                    <div class="action-title">Reported Messages</div>
+                    <div class="action-desc">Review flagged messages</div>
+                </div>
+                
+                <div class="action-card" data-action="announce">
+                    <div class="action-icon">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <div class="action-title">New Announcement</div>
+                    <div class="action-desc">Post system announcement</div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card">
+                <h2 style="margin-bottom: 20px; color: var(--primary);">
+                    <i class="fas fa-history"></i> Recent Activity
+                </h2>
+                <div id="recentActivity">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading recent activity...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Announcement Modal -->
+        <div class="modal" id="editAnnouncementModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Edit Announcement</h3>
+                    <button class="close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editAnnouncementId">
+                    <div class="form-group">
+                        <label for="editAnnouncementTitle">Title *</label>
+                        <input type="text" id="editAnnouncementTitle" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editAnnouncementContent">Content *</label>
+                        <textarea id="editAnnouncementContent" class="form-control" rows="6" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" id="cancelEditAnnouncement">Cancel</button>
+                    <button class="btn btn-primary" id="submitEditAnnouncement">Save Changes</button>
+                </div>
+            </div>
+        </div>
+        <!-- Manage Items Tab -->
+        <div id="itemsTab" class="tab-content">
+            <div class="dashboard-header">
+                <h1 class="page-title">Manage Items</h1>
+                <div class="search-filter-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="itemSearch" placeholder="Search items...">
+                    </div>
+                    <select class="filter-select" id="itemStatusFilter">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="lost">Lost</option>
+                        <option value="found">Found</option>
+                        <option value="claimed">Claimed</option>
+                        <option value="returned">Returned</option>
+                    </select>
+                    <select class="filter-select" id="itemCategoryFilter">
+                        <option value="all">All Categories</option>
+                        <option value="gadgets">Gadgets</option>
+                        <option value="accessories">Accessories</option>
+                        <option value="ids">IDs & Cards</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="books">Books</option>
+                        <option value="others">Others</option>
+                    </select>
+                    <button class="btn btn-primary" id="applyItemFilters">
+                        <i class="fas fa-filter"></i> Apply
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Reported By</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px;">
+                                <div class="loading">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading items...
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="pagination" id="itemsPagination">
+                    <!-- Pagination will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Users Tab -->
+        <div id="usersTab" class="tab-content">
+            <div class="dashboard-header">
+                <h1 class="page-title">Manage Users</h1>
+                <div class="search-filter-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="userSearch" placeholder="Search users...">
+                    </div>
+                    <select class="filter-select" id="userRoleFilter">
+                        <option value="student">Students</option>
+                    </select>
+                    <select class="filter-select" id="userStatusFilter">
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="card">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px;">
+                                <div class="loading">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading users...
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Reported Messages Tab -->
+        <div id="messagesTab" class="tab-content">
+            <div class="dashboard-header">
+                <h1 class="page-title">Reported Messages</h1>
+                <div class="search-filter-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="messageSearch" placeholder="Search messages...">
+                    </div>
+                    <button class="btn btn-primary" id="refreshMessages">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div id="reportedMessagesList">
+                    <div class="loading" style="text-align: center; padding: 40px;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading reported messages...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Announcements Tab -->
+        <div id="announcementsTab" class="tab-content">
+            <div class="dashboard-header">
+                <h1 class="page-title">Announcements</h1>
+                <button class="btn btn-primary" id="createAnnouncementBtn">
+                    <i class="fas fa-plus"></i> Create Announcement
+                </button>
+            </div>
+            
+            <!-- Create Announcement Form (Initially hidden) -->
+            <div class="create-announcement-form" id="announcementForm" style="display: none;">
+                <h3 style="margin-bottom: 20px; color: var(--primary);">
+                    <i class="fas fa-edit"></i> Create New Announcement
+                </h3>
+                <form id="newAnnouncementForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="announcementTitle">Title *</label>
+                            <input type="text" id="announcementTitle" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="announcementContent">Content *</label>
+                        <textarea id="announcementContent" class="form-control" rows="6" required></textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Publish Announcement
+                        </button>
+                        <button type="button" class="btn btn-outline" id="cancelAnnouncement">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h3 style="margin-bottom: 20px; color: var(--primary);">
+                    <i class="fas fa-list"></i> Existing Announcements
+                </h3>
+                <div id="announcementsList">
+                    <div class="loading" style="text-align: center; padding: 40px;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading announcements...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+    </div>
+
+    <!-- Modals -->
+    
+    <!-- Item Detail Modal -->
+    <div class="modal" id="itemDetailModal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Item Details</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="item-details-grid" id="itemDetailsContent">
+                    <!-- Details will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="closeItemModal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Detail Modal -->
+    <div class="modal" id="userDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>User Details</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="userDetailsContent">
+                    <!-- Details will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="toggleUserStatusBtn">
+                    <i class="fas fa-user-cog"></i> Toggle Status
+                </button>
+                <button class="btn btn-outline" id="closeUserModal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Message Detail Modal -->
+    <div class="modal" id="messageDetailModal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Message Details</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="messageDetailsContent">
+                    <!-- Details will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" id="deleteMessageBtn">
+                    <i class="fas fa-trash"></i> Delete Message
+                </button>
+                <button class="btn btn-outline" id="closeMessageModal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmationTitle">Confirm Action</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmationMessage">Are you sure you want to perform this action?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="confirmAction">Confirm</button>
+                <button class="btn btn-outline" id="cancelAction">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Edit Item Modal -->
+    <div class="modal" id="adminEditItemModal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Edit Item</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="adminEditItemId" />
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adminEditItemName">Item Name *</label>
+                        <input type="text" id="adminEditItemName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminEditItemCategory">Category *</label>
+                        <select id="adminEditItemCategory" class="form-control" required>
+                            <option value="gadgets">Gadgets</option>
+                            <option value="accessories">Accessories</option>
+                            <option value="ids">IDs & Cards</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="books">Books</option>
+                            <option value="others">Others</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adminEditItemDescription">Description *</label>
+                        <textarea id="adminEditItemDescription" class="form-control" required></textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adminEditItemPlace">Place *</label>
+                        <input type="text" id="adminEditItemPlace" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminEditItemDate">Date *</label>
+                        <input type="date" id="adminEditItemDate" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adminEditItemStatus">Status *</label>
+                        <select id="adminEditItemStatus" class="form-control" required>
+                            <option value="lost">Lost</option>
+                            <option value="found">Found</option>
+                            <option value="claimed">Claimed</option>
+                            <option value="returned">Returned</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminEditContactInfo">Contact Info *</label>
+                        <input type="text" id="adminEditContactInfo" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adminEditItemImage">Image</label>
+                        <input type="file" id="adminEditItemImage" accept="image/*">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelAdminEditItem">Cancel</button>
+                <button class="btn btn-primary" id="submitAdminEditItem">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin User Message Modal -->
+    <div class="modal" id="adminUserMessageModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="adminUserMessageTitle">Message User</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="adminMessageUserId" />
+                <div class="form-group">
+                    <label for="adminUserMessageText">Message</label>
+                    <textarea id="adminUserMessageText" class="form-control" rows="3" placeholder="Type a message..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="adminUserMessageImage">Attachment (optional)</label>
+                    <input type="file" id="adminUserMessageImage" accept="image/*">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelAdminUserMessage">Cancel</button>
+                <button class="btn btn-primary" id="sendAdminUserMessage">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="modal" id="notificationsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Notifications</h3>
+                <button class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="notificationsList"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="markAllRead">Mark All as Read</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/admin-dashboard.js"></script>
+    <script>
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create mobile menu toggle if needed
+            const navLinks = document.getElementById('navLinks');
+            const header = document.querySelector('header');
+            
+            // Add mobile menu toggle button for small screens
+            if (window.innerWidth <= 768) {
+                const toggleBtn = document.createElement('button');
+                toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                toggleBtn.className = 'mobile-menu-toggle';
+                toggleBtn.style.cssText = `
+                    position: absolute;
+                    right: 20px;
+                    top: 15px;
+                    background: none;
+                    border: none;
+                    font-size: 1.5rem;
+                    color: var(--primary);
+                    cursor: pointer;
+                    z-index: 101;
+                `;
+                
+                document.querySelector('.logo-section').appendChild(toggleBtn);
+                
+                toggleBtn.addEventListener('click', function() {
+                    navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+                });
+                
+                navLinks.style.cssText = `
+                    display: none;
+                    flex-direction: column;
+                    position: absolute;
+                    top: 70px;
+                    left: 0;
+                    right: 0;
+                    background: white;
+                    box-shadow: var(--shadow);
+                    z-index: 100;
+                    padding: 10px 0;
+                `;
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!navLinks.contains(event.target) && !toggleBtn.contains(event.target)) {
+                        navLinks.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Close modals on outside click
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Close modals with close buttons
+            document.querySelectorAll('.close').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.modal').style.display = 'none';
+                });
+            });
+            
+            // Navigation tab switching
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Update active nav
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Hide mobile menu
+                    if (window.innerWidth <= 768) {
+                        navLinks.style.display = 'none';
+                    }
+                    
+                    // Show corresponding tab
+                    const tab = this.getAttribute('data-tab');
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tab + 'Tab').classList.add('active');
+                });
+            });
+            
+            // Quick actions
+            document.querySelectorAll('.action-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const action = this.getAttribute('data-action');
+                    switch(action) {
+                        case 'verify':
+                            document.querySelector('.nav-link[data-tab="items"]').click();
+                            break;
+                        case 'users':
+                            document.querySelector('.nav-link[data-tab="users"]').click();
+                            break;
+                        case 'messages':
+                            document.querySelector('.nav-link[data-tab="messages"]').click();
+                            break;
+                        case 'announce':
+                            document.querySelector('.nav-link[data-tab="announcements"]').click();
+                            document.getElementById('announcementForm').style.display = 'block';
+                            break;
+                    }
+                });
+            });
+            
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                if (confirm('Are you sure you want to logout?')) {
+                    window.location.href = '/login.html';
+                }
+            });
+
+            // Edit announcement modal actions
+            document.getElementById('cancelEditAnnouncement')?.addEventListener('click', function() {
+                document.getElementById('editAnnouncementModal').style.display = 'none';
+            });
+            document.getElementById('submitEditAnnouncement')?.addEventListener('click', function() {
+                if (window.adminDashboard) {
+                    window.adminDashboard.submitEditAnnouncement();
+                }
+            });
+
+            // Admin edit item modal actions
+            document.getElementById('cancelAdminEditItem')?.addEventListener('click', function() {
+                document.getElementById('adminEditItemModal').style.display = 'none';
+            });
+            document.getElementById('submitAdminEditItem')?.addEventListener('click', function() {
+                if (window.adminDashboard) {
+                    window.adminDashboard.submitAdminEditItem();
+                }
+            });
+
+            // Admin user message modal actions
+            document.getElementById('cancelAdminUserMessage')?.addEventListener('click', function() {
+                document.getElementById('adminUserMessageModal').style.display = 'none';
+            });
+            document.getElementById('sendAdminUserMessage')?.addEventListener('click', function() {
+                if (window.adminDashboard) {
+                    window.adminDashboard.submitAdminUserMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
