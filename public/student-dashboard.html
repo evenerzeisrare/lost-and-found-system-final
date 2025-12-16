@@ -274,6 +274,22 @@
             color: var(--dark);
             font-weight: 500;
         }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 10px 0 20px;
+        }
+        .profile-header .profile-avatar {
+            margin: 0;
+        }
+        .profile-header #profileAvatarImg {
+            margin: 0;
+        }
+        .profile-header .profile-info {
+            text-align: left;
+            margin: 0;
+        }
         
         .profile-stats {
             display: grid;
@@ -377,6 +393,30 @@
             .profile-stats {
                 grid-template-columns: 1fr;
             }
+        }
+        .navbar {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            box-shadow: var(--shadow);
+            z-index: 100;
+        }
+        .nav-links .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: var(--dark);
+            transition: var(--transition);
+        }
+        .nav-links .nav-link.active {
+            background-color: rgba(46,125,50,0.12);
+            color: var(--primary);
+        }
+        .nav-links .nav-link:hover {
+            background-color: rgba(46,125,50,0.08);
+            color: var(--primary);
         }
     </style>
 </head>
@@ -591,12 +631,14 @@
             </div>
             
             <div class="card">
-                <div class="profile-avatar" id="profileAvatar">S</div>
-                <img id="profileAvatarImg" alt="Profile Image" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: none;" onerror="this.style.display='none'">
-                <div class="profile-info">
-                    <div class="profile-name" id="profileName">Student Name</div>
-                    <div class="profile-email" id="profileEmail">email@carsu.edu.ph</div>
-                    <div class="profile-id" id="profileStudentId">Student ID: Not set</div>
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profileAvatar">S</div>
+                    <img id="profileAvatarImg" alt="Profile Image" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: none;" onerror="this.style.display='none'">
+                    <div class="profile-info">
+                        <div class="profile-name" id="profileName">Student Name</div>
+                        <div class="profile-email" id="profileEmail">email@carsu.edu.ph</div>
+                        <div class="profile-id" id="profileStudentId">Student ID: Not set</div>
+                    </div>
                 </div>
                 
                 
@@ -616,8 +658,8 @@
                         <input type="tel" id="phoneNumber" class="form-control" placeholder="Enter your phone number" pattern="^[0-9+()\-\s]{7,20}$" maxlength="20">
                     </div>
                     <div class="form-group">
-                        <label for="studentId">Student ID</label>
-                        <input type="text" id="studentId" class="form-control" placeholder="Enter your student ID">
+                        <label for="studentId">Student ID (read-only)</label>
+                        <input type="text" id="studentId" class="form-control" readonly>
                     </div>
                     <div class="form-group">
                         <label for="contactMethod">Preferred Contact Method</label>
@@ -915,7 +957,7 @@
         </div>
     </div>
 
-    <script src="./js/student-dashboard.js"></script>
+    <script type="module" src="./js/student/student-dashboard.js"></script>
     <script>
         // Mobile menu toggle
         document.getElementById('mobileMenuToggle').addEventListener('click', function() {
