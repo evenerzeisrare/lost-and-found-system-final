@@ -35,7 +35,8 @@ async function adminUsers(req, res) {
   try {
     const connection = await pool().getConnection();
     const [users] = await connection.execute(`
-      SELECT id, full_name, email, student_id, role, is_active, created_at 
+      SELECT id, full_name, email, student_id, role, is_active, created_at,
+             phone_number, college, program, course, year_level
       FROM users 
       ORDER BY created_at DESC
     `);
@@ -195,23 +196,20 @@ async function rejectClaim(req, res) {
   try {
     const itemId = req.params.id;
     connection = await pool().getConnection();
-    const [items] = await connection.execute('SELECT id, item_name, reported_by, claimed_by FROM items WHERE id = ?', [itemId]);
+    const [items] = await connection.execute('SELECT id, item_name, reported_by, claimed_by, status FROM items WHERE id = ?', [itemId]);
     if (items.length === 0) {
       connection.release();
       return res.status(404).json({ success: false, error: 'Item not found' });
     }
     const item = items[0];
-    if (!item.claimed_by) {
-      await connection.execute('UPDATE items SET status = "found" WHERE id = ?', [itemId]);
-      await addNotification(item.reported_by, 'Claim Rejected', `The claim for your item "${item.item_name}" was rejected by admin`, 'warning', itemId);
+    if (item.status === 'claimed') {
       connection.release();
-      return res.json({ success: true, message: 'Claim rejection applied (item not currently claimed)' });
+      return res.status(403).json({ success: false, error: 'Cannot reject claim for a claimed item' });
     }
-    await connection.execute('UPDATE items SET claimed_by = NULL, status = "found" WHERE id = ?', [itemId]);
-    await addNotification(item.claimed_by, 'Claim Rejected', `Your claim for item "${item.item_name}" was rejected by admin`, 'warning', itemId);
+    await connection.execute('UPDATE items SET status = "found" WHERE id = ?', [itemId]);
     await addNotification(item.reported_by, 'Claim Rejected', `The claim for your item "${item.item_name}" was rejected by admin`, 'warning', itemId);
     connection.release();
-    res.json({ success: true, message: 'Claim rejected and item reset to found' });
+    return res.json({ success: true, message: 'Claim rejection applied' });
   } catch (error) {
     if (connection) connection.release();
     res.status(500).json({ success: false, error: 'Server error' });
@@ -229,7 +227,18 @@ async function adminUpdateItem(req, res) {
     if (req.file) {
       imageUrl = `/uploads/${req.file.filename}`;
     }
-    await connection.execute(`UPDATE items SET item_name = ?, category = ?, description = ?, place = ?, date_lost_found = ?, status = ?, contact_info = ?, image_url = ? WHERE id = ?`, [itemName, category, description, place, dateLostFound, status, contactInfo, imageUrl, itemId]);
+    const allowed = ['lost', 'found', 'claimed'];
+    const incomingStatus = (status || '').toLowerCase();
+    if (!allowed.includes(incomingStatus)) {
+      connection.release();
+      return res.status(400).json({ success: false, error: 'Invalid status' });
+    }
+    const currentStatus = (items[0]?.status || '').toLowerCase();
+    if (currentStatus === 'claimed' && incomingStatus !== 'claimed') {
+      connection.release();
+      return res.status(403).json({ success: false, error: 'Cannot change status of a claimed item' });
+    }
+    await connection.execute(`UPDATE items SET item_name = ?, category = ?, description = ?, place = ?, date_lost_found = ?, status = ?, contact_info = ?, image_url = ? WHERE id = ?`, [itemName, category, description, place, dateLostFound, incomingStatus, contactInfo, imageUrl, itemId]);
     connection.release();
     res.json({ success: true, message: 'Item updated successfully' });
   } catch (error) {
@@ -341,6 +350,30 @@ async function toggleUserActive(req, res) {
   }
 }
 
+async function deleteUser(req, res) {
+  let connection;
+  try {
+    const userId = req.params.id;
+    connection = await pool().getConnection();
+    const [userRows] = await connection.execute('SELECT id, role FROM users WHERE id = ?', [userId]);
+    if (userRows.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    const user = userRows[0];
+    if (user.role === 'admin') {
+      connection.release();
+      return res.status(400).json({ success: false, error: 'Cannot delete admin accounts' });
+    }
+    await connection.execute('DELETE FROM users WHERE id = ?', [userId]);
+    connection.release();
+    res.json({ success: true, message: 'User account deleted successfully' });
+  } catch (error) {
+    if (connection) connection.release();
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+}
+
 async function adminCheck(req, res) {
   try {
     const connection = await pool().getConnection();
@@ -432,4 +465,4 @@ async function testDb(req, res) {
   }
 }
 
-module.exports = { adminDashboardData, adminUsers, adminItems, latestClaimProof, allClaimProofs, approveClaim, rejectProof, rejectClaim, adminUpdateItem, adminDeleteItem, claimItem, reportedMessages, deleteAdminMessage, toggleUserActive, adminCheck, adminSetup, setupAdmin, health, testDb };
+module.exports = { adminDashboardData, adminUsers, adminItems, latestClaimProof, allClaimProofs, approveClaim, rejectProof, rejectClaim, adminUpdateItem, adminDeleteItem, claimItem, reportedMessages, deleteAdminMessage, toggleUserActive, deleteUser, adminCheck, adminSetup, setupAdmin, health, testDb };

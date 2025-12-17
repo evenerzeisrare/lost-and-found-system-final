@@ -41,7 +41,7 @@ async function studentProfile(req, res) {
   try {
     const userId = req.user.id;
     const connection = await pool().getConnection();
-    const [userInfo] = await connection.execute('SELECT id, full_name, email, student_id, phone_number, contact_method, avatar_url FROM users WHERE id = ?', [userId]);
+    const [userInfo] = await connection.execute('SELECT id, full_name, email, student_id, phone_number, contact_method, avatar_url, college, program FROM users WHERE id = ?', [userId]);
     const [userItems] = await connection.execute('SELECT * FROM items WHERE reported_by = ? ORDER BY created_at DESC LIMIT 6', [userId]);
     const [stats] = await connection.execute(`
       SELECT 
@@ -60,13 +60,13 @@ async function studentProfile(req, res) {
 async function updateProfile(req, res) {
   try {
     const userId = req.user.id;
-    const { phoneNumber, contactMethod } = req.body;
+    const { phoneNumber, college, program } = req.body;
     let avatarUrl = null;
     if (req.file) {
       avatarUrl = `/uploads/${req.file.filename}`;
     }
     const connection = await pool().getConnection();
-    await connection.execute('UPDATE users SET phone_number = ?, contact_method = ?, avatar_url = COALESCE(?, avatar_url) WHERE id = ?', [phoneNumber, contactMethod, avatarUrl, userId]);
+    await connection.execute('UPDATE users SET phone_number = ?, college = COALESCE(?, college), program = COALESCE(?, program), avatar_url = COALESCE(?, avatar_url) WHERE id = ?', [phoneNumber, college || null, program || null, avatarUrl, userId]);
     connection.release();
     res.json({ success: true, message: 'Profile updated successfully' });
   } catch (error) {

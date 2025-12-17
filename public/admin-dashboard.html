@@ -582,16 +582,7 @@
             
             <!-- Stats Cards -->
             <div class="admin-stats">
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="stat-trend" id="pendingTrend">+12%</div>
-                    </div>
-                    <div class="stat-value" id="pendingCount">0</div>
-                    <div class="stat-label">Pending Verification</div>
-                </div>
+                
                 
                 <div class="stat-card">
                     <div class="stat-header">
@@ -601,7 +592,7 @@
                         <div class="stat-trend" id="readyTrend">+8%</div>
                     </div>
                     <div class="stat-value" id="readyCount">0</div>
-                    <div class="stat-label">Ready for Claim</div>
+                    <div class="stat-label">Found Items</div>
                 </div>
                 
                 <div class="stat-card">
@@ -623,7 +614,7 @@
                         <div class="stat-trend" id="unresolvedTrend">-5%</div>
                     </div>
                     <div class="stat-value" id="unresolvedCount">0</div>
-                    <div class="stat-label">Unresolved Reports</div>
+                    <div class="stat-label">Reported Items</div>
                 </div>
                 
                 <div class="stat-card">
@@ -645,7 +636,7 @@
                         <div class="stat-trend" id="inactiveTrend">+2%</div>
                     </div>
                     <div class="stat-value" id="inactiveCount">0</div>
-                    <div class="stat-label">Inactive Users</div>
+                    <div class="stat-label">Banned Users</div>
                 </div>
             </div>
             
@@ -654,13 +645,7 @@
                 <i class="fas fa-bolt"></i> Quick Actions
             </h2>
             <div class="quick-actions">
-                <div class="action-card" data-action="verify">
-                    <div class="action-icon">
-                        <i class="fas fa-check-double"></i>
-                    </div>
-                    <div class="action-title">Verify Reports</div>
-                    <div class="action-desc">Review pending item reports</div>
-                </div>
+                
                 
                 <div class="action-card" data-action="users">
                     <div class="action-icon">
@@ -733,14 +718,12 @@
                         <i class="fas fa-search"></i>
                         <input type="text" id="itemSearch" placeholder="Search items...">
                     </div>
-                    <select class="filter-select" id="itemStatusFilter">
-                        <option value="all">All Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="lost">Lost</option>
-                        <option value="found">Found</option>
-                        <option value="claimed">Claimed</option>
-                        <option value="returned">Returned</option>
-                    </select>
+                        <select class="filter-select" id="itemStatusFilter">
+                            <option value="all">All Status</option>
+                            <option value="lost">Lost</option>
+                            <option value="found">Found</option>
+                            <option value="claimed">Claimed</option>
+                        </select>
                     <select class="filter-select" id="itemCategoryFilter">
                         <option value="all">All Categories</option>
                         <option value="gadgets">Gadgets</option>
@@ -813,6 +796,8 @@
                             <th>Student ID</th>
                             <th>Name</th>
                             <th>Email</th>
+                            <th>Course</th>
+                            <th>Year</th>
                             <th>Role</th>
                             <th>Status</th>
                             <th>Joined</th>
@@ -945,6 +930,9 @@
                 <button class="btn btn-primary" id="toggleUserStatusBtn">
                     <i class="fas fa-user-cog"></i> Toggle Status
                 </button>
+                <button class="btn btn-danger" id="deleteUserBtn">
+                    <i class="fas fa-trash"></i> Delete Account
+                </button>
                 <button class="btn btn-outline" id="closeUserModal">
                     Close
                 </button>
@@ -1041,7 +1029,6 @@
                             <option value="lost">Lost</option>
                             <option value="found">Found</option>
                             <option value="claimed">Claimed</option>
-                            <option value="returned">Returned</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1076,10 +1063,7 @@
                     <label for="adminUserMessageText">Message</label>
                     <textarea id="adminUserMessageText" class="form-control" rows="3" placeholder="Type a message..."></textarea>
                 </div>
-                <div class="form-group">
-                    <label for="adminUserMessageImage">Attachment (optional)</label>
-                    <input type="file" id="adminUserMessageImage" accept="image/*">
-                </div>
+                
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" id="cancelAdminUserMessage">Cancel</button>
@@ -1251,6 +1235,20 @@
             document.getElementById('sendAdminUserMessage')?.addEventListener('click', function() {
                 if (window.adminDashboard) {
                     window.adminDashboard.submitAdminUserMessage();
+                }
+            });
+            document.getElementById('toggleUserStatusBtn')?.addEventListener('click', function() {
+                const modal = document.getElementById('userDetailModal');
+                const userId = modal?.dataset.userId;
+                if (userId && window.adminDashboard) {
+                    window.adminDashboard.toggleUserStatus(userId);
+                }
+            });
+            document.getElementById('deleteUserBtn')?.addEventListener('click', function() {
+                const modal = document.getElementById('userDetailModal');
+                const userId = modal?.dataset.userId;
+                if (userId && window.adminDashboard) {
+                    window.adminDashboard.deleteUser(userId);
                 }
             });
         });

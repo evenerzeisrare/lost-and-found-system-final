@@ -12,6 +12,8 @@ export async function loadNotifications(ctx) {
         ctx.showNotification(`${title}${msg ? ': ' + msg : ''}`, 'info');
       }
       ctx._lastUnreadCount = data.unreadCount || 0;
+      const markAllBtn = el('markAllRead');
+      if (markAllBtn) markAllBtn.style.display = (data.unreadCount || 0) > 0 ? 'inline-block' : 'none';
       if (el('notificationsModal')?.style.display === 'flex') {
         ctx.renderNotifications(data.notifications || []);
       }

@@ -20,7 +20,7 @@ passport.use('local', new LocalStrategy({
       return done(null, false, { message: 'Please use a valid @carsu.edu.ph email address' });
     }
     if (!user.is_active) {
-      return done(null, false, { message: 'Your account has been deactivated by the system. Please go to the Lost and Found Team at CCIS Hiraya CL5.' });
+      return done(null, false, { message: 'This account has been disabled by the administrator. Please use Google Sign-In if applicable or contact the admin for assistance.' });
     }
     if (!user.password) {
       return done(null, false, { message: 'Please use Google Sign-In for this account or contact admin.' });
@@ -53,20 +53,18 @@ passport.use(new GoogleStrategy({
       connection.release();
       return done(null, existingUser[0]);
     }
-    let role = 'student';
     if (email === 'lostfound.devteam@gmail.com') {
-      role = 'admin';
-    } else if (!email.endsWith('@carsu.edu.ph')) {
+      const [result] = await connection.execute(
+        `INSERT INTO users (full_name, email, google_id, avatar_url, role) VALUES (?, ?, ?, ?, 'admin')`,
+        [profile.displayName, email, profile.id, profile.photos[0]?.value]
+      );
+      const [newUser] = await connection.execute('SELECT * FROM users WHERE id = ?', [result.insertId]);
       connection.release();
-      return done(null, false, { message: 'Only @carsu.edu.ph emails are allowed for student registration' });
+      return done(null, newUser[0]);
+    } else {
+      connection.release();
+      return done(null, false, { message: 'Please register before logging in.' });
     }
-    const [result] = await connection.execute(
-      `INSERT INTO users (full_name, email, google_id, avatar_url, role) VALUES (?, ?, ?, ?, ?)`,
-      [profile.displayName, email, profile.id, profile.photos[0]?.value, role]
-    );
-    const [newUser] = await connection.execute('SELECT * FROM users WHERE id = ?', [result.insertId]);
-    connection.release();
-    return done(null, newUser[0]);
   } catch (error) {
     return done(error);
   }

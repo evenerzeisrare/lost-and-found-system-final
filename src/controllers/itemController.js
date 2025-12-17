@@ -45,6 +45,10 @@ async function reportItem(req, res) {
   let connection;
   try {
     const userId = req.user.id;
+    const [userRows] = await (await pool().getConnection()).execute('SELECT is_active FROM users WHERE id = ?', [userId]);
+    if (!userRows.length || userRows[0].is_active !== 1) {
+      return res.status(403).json({ success: false, error: 'Banned users cannot report items' });
+    }
     const { itemName, category, description, place, dateLostFound, status, contactInfo } = req.body;
     if (!itemName || !category || !description || !place || !dateLostFound || !status || !contactInfo) {
       return res.status(400).json({ error: 'All fields are required' });
@@ -186,8 +190,13 @@ async function submitClaimProof(req, res) {
   try {
     const itemId = req.params.id;
     const userId = req.user.id;
-    const { note, claimer_name } = req.body;
+    const { note } = req.body;
     connection = await pool().getConnection();
+    const [userRows] = await connection.execute('SELECT is_active FROM users WHERE id = ?', [userId]);
+    if (!userRows.length || userRows[0].is_active !== 1) {
+      connection.release();
+      return res.status(403).json({ success: false, error: 'Banned users cannot claim' });
+    }
     const [itemRows] = await connection.execute('SELECT * FROM items WHERE id = ?', [itemId]);
     if (itemRows.length === 0) {
       connection.release();
@@ -200,7 +209,7 @@ async function submitClaimProof(req, res) {
     }
     let imageUrl = null;
     if (req.file) imageUrl = `/uploads/${req.file.filename}`;
-    const appendedMessage = note ? (claimer_name ? `${note} (Claimer: ${claimer_name})` : note) : (claimer_name ? `(Claimer: ${claimer_name})` : null);
+    const appendedMessage = note ? note : null;
     if (item.reported_by) {
       await sendMessageService(userId, item.reported_by, itemId, appendedMessage || 'Claim proof submitted', imageUrl);
       await addNotification(item.reported_by, 'Claim Proof', `A claimant submitted proof for your item "${item.item_name}"`, 'claim', itemId);
@@ -218,14 +227,14 @@ async function submitClaimProof(req, res) {
   }
 }
 
-module.exports = { listItems, listMyItems, reportItem, updateItem, deleteItem, getItem, getItemImage, submitClaimProof, updateItemStatusByOwner, claimProofStatus };
+module.exports = { listItems, listMyItems, reportItem, updateItem, deleteItem, getItem, getItemImage, submitClaimProof, updateItemStatusByOwner, claimProofStatus, reportItemIssue };
 async function updateItemStatusByOwner(req, res) {
   let connection;
   try {
     const itemId = req.params.id;
     const { status } = req.body;
     const userId = req.user.id;
-    if (!['claimed', 'returned'].includes(status)) {
+    if (!['claimed'].includes(status)) {
       return res.status(400).json({ success: false, error: 'Invalid status' });
     }
     connection = await pool().getConnection();
@@ -239,7 +248,26 @@ async function updateItemStatusByOwner(req, res) {
       connection.release();
       return res.status(403).json({ success: false, error: 'Not allowed' });
     }
-    await connection.execute('UPDATE items SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [status, itemId]);
+    const [proofRows] = await connection.execute(`
+      SELECT m.sender_id
+      FROM messages m
+      WHERE m.item_id = ? AND m.image_url IS NOT NULL AND m.sender_id <> ?
+      ORDER BY m.created_at DESC
+      LIMIT 1
+    `, [itemId, item.reported_by]);
+    if (proofRows.length === 0) {
+      connection.release();
+      return res.status(400).json({ success: false, error: 'No proof available to determine claimer' });
+    }
+    const claimerId = proofRows[0].sender_id;
+    const [claimerRows] = await connection.execute('SELECT id, is_active, full_name FROM users WHERE id = ?', [claimerId]);
+    if (!claimerRows.length || claimerRows[0].is_active !== 1) {
+      connection.release();
+      return res.status(400).json({ success: false, error: 'Claimer not found or banned' });
+    }
+    await connection.execute('UPDATE items SET status = ?, claimed_by = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [status, claimerId, itemId]);
+    await addNotification(userId, 'Item Claimed', 'Your item was marked as claimed', 'claim', itemId);
+    await addNotification(claimerId, 'Claim Approved', 'Your claim was approved by the owner', 'success', itemId);
     connection.release();
     res.json({ success: true, message: `Item marked as ${status}` });
   } catch (error) {
@@ -260,6 +288,37 @@ async function claimProofStatus(req, res) {
     );
     connection.release();
     res.json({ success: true, submitted: rows.length > 0 });
+  } catch (error) {
+    if (connection) connection.release();
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+}
+
+async function reportItemIssue(req, res) {
+  let connection;
+  try {
+    const itemId = req.params.id;
+    const userId = req.user.id;
+    const { reason } = req.body || {};
+    if (!reason || !String(reason).trim()) {
+      return res.status(400).json({ success: false, error: 'Reason is required' });
+    }
+    connection = await pool().getConnection();
+    const [items] = await connection.execute('SELECT id, item_name, reported_by FROM items WHERE id = ?', [itemId]);
+    if (items.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, error: 'Item not found' });
+    }
+    const item = items[0];
+    const [admins] = await connection.execute('SELECT id FROM users WHERE role = "admin" AND is_active = TRUE');
+    for (const admin of admins) {
+      await addNotification(admin.id, 'Item Reported', `Item "${item.item_name}" was reported: ${String(reason).trim()}`, 'report', itemId);
+    }
+    if (item.reported_by && Number(item.reported_by) !== Number(userId)) {
+      await addNotification(item.reported_by, 'Your Item Was Reported', `Your item "${item.item_name}" was reported to admin for review`, 'warning', itemId);
+    }
+    connection.release();
+    res.json({ success: true, message: 'Item reported to admin' });
   } catch (error) {
     if (connection) connection.release();
     res.status(500).json({ success: false, error: 'Server error' });

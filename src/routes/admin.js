@@ -3,7 +3,7 @@ const router = express.Router();
 const { ensureAuthenticated, ensureAdmin } = require('../middlewares/authMiddleware');
 const { upload, handleMulterError } = require('../middlewares/upload');
 const { adminDashboardData, adminUsers, adminItems, latestClaimProof, allClaimProofs, approveClaim, rejectProof, rejectClaim, adminUpdateItem, adminDeleteItem, claimItem, reportedMessages, deleteAdminMessage } = require('../controllers/adminController');
-const { toggleUserActive, adminCheck, adminSetup, setupAdmin, health, testDb } = require('../controllers/adminController');
+const { toggleUserActive, deleteUser, adminCheck, adminSetup, setupAdmin, health, testDb } = require('../controllers/adminController');
 
 router.get('/api/admin/dashboard-data', ensureAuthenticated, ensureAdmin, adminDashboardData);
 router.get('/api/admin/users', ensureAuthenticated, ensureAdmin, adminUsers);
@@ -19,6 +19,7 @@ router.delete('/api/admin/items/:id', ensureAuthenticated, ensureAdmin, adminDel
 router.get('/api/admin/reported-messages', ensureAuthenticated, ensureAdmin, reportedMessages);
 router.delete('/api/admin/messages/:id', ensureAuthenticated, ensureAdmin, deleteAdminMessage);
 router.post('/api/admin/users/:id/toggle-active', ensureAuthenticated, ensureAdmin, toggleUserActive);
+router.delete('/api/admin/users/:id', ensureAuthenticated, ensureAdmin, deleteUser);
 router.get('/api/debug/admin-check', adminCheck);
 router.post('/api/admin/setup', adminSetup);
 router.post('/api/setup-admin', setupAdmin);

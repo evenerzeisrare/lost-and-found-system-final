@@ -11,10 +11,9 @@ export async function loadBrowseItems(ctx) {
 export async function loadMyItems(ctx, filter = 'all') {
   try {
     const data = await getMyItems();
-    if (data && data.success) {
+  if (data && data.success) {
       let filteredItems = data.items;
-      if (filter === 'pending') filteredItems = data.items.filter(item => item.status === 'pending');
-      else if (filter === 'claimed') filteredItems = data.items.filter(item => item.status === 'claimed');
+      if (filter === 'claimed') filteredItems = data.items.filter(item => item.status === 'claimed');
       const containerId = `myItemsGrid${filter.charAt(0).toUpperCase() + filter.slice(1)}`;
       renderItems(ctx, filteredItems, containerId);
     }
@@ -115,15 +114,14 @@ export function showItemDetail(ctx, item) {
   if (messageBtn) messageBtn.style.display = item.reported_by !== ctx.currentUser?.id ? 'inline-block' : 'none';
   if (proofBtn) proofBtn.style.display = item.reported_by !== ctx.currentUser?.id ? 'inline-block' : 'none';
   const markClaimedBtn = document.getElementById('markClaimedByOwnerBtn');
-  const markReturnedBtn = document.getElementById('markReturnedByOwnerBtn');
+  const reportItemBtn = document.getElementById('reportItemBtn');
   if (item.reported_by === ctx.currentUser?.id) {
     if (markClaimedBtn) markClaimedBtn.style.display = 'inline-block';
-    if (markReturnedBtn) markReturnedBtn.style.display = 'inline-block';
     if (markClaimedBtn) markClaimedBtn.onclick = () => updateItemStatus(ctx, item.id, 'claimed');
-    if (markReturnedBtn) markReturnedBtn.onclick = () => updateItemStatus(ctx, item.id, 'returned');
+    if (reportItemBtn) reportItemBtn.style.display = 'none';
   } else {
     if (markClaimedBtn) markClaimedBtn.style.display = 'none';
-    if (markReturnedBtn) markReturnedBtn.style.display = 'none';
+    if (reportItemBtn) { reportItemBtn.style.display = 'inline-block'; reportItemBtn.onclick = () => reportItemIssue(ctx, item.id); }
   }
   if (modal) modal.style.display = 'flex';
 }
@@ -141,10 +139,9 @@ export function hideClaimProofModal() { const m = document.getElementById('claim
 
 export async function submitClaimProof(ctx) {
   const itemId = document.getElementById('claimProofItemId')?.value;
-  const note = document.getElementById('claimProofNote')?.value?.trim() || '';
   const file = document.getElementById('claimProofFile')?.files?.[0] || null;
   if (!file) { alert('Please attach an image proof before submitting.'); return; }
-  const fd = new FormData(); if (note) fd.append('note', note); fd.append('proof', file);
+  const fd = new FormData(); fd.append('proof', file);
   try {
     const data = await apiSubmitClaimProof(itemId, fd);
     if (data && data.success) {
@@ -162,6 +159,19 @@ export async function updateItemStatus(ctx, itemId, status) {
     if (data && data.success) { alert(`Status updated to ${status}`); hideItemDetailModal(); await loadMyItems(ctx, 'all'); }
     else { alert(data?.error || 'Failed to update status'); }
   } catch { alert('Error updating status'); }
+}
+
+export async function reportItemIssue(ctx, itemId) {
+  const reason = prompt('Describe the issue with this item (e.g., incorrect info, inappropriate content):');
+  if (reason === null) return;
+  const text = (reason || '').trim();
+  if (!text) { alert('Please provide a reason'); return; }
+  try {
+    const res = await fetch(`/api/items/${itemId}/report-issue`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ reason: text }) });
+    const data = await res.json();
+    if (data && data.success) { alert('Item reported to admin. Thank you.'); hideItemDetailModal(); }
+    else { alert(data?.error || 'Failed to report item'); }
+  } catch { alert('Error reporting item'); }
 }
 
 export function showEditItemModal(ctx, item) {

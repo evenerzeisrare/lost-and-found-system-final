@@ -364,6 +364,15 @@
       .catch(error => {
         console.log('Not logged in');
       });
+    
+    const params = new URLSearchParams(window.location.search);
+    const errorMsg = params.get('error');
+    if (errorMsg) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.textContent = decodeURIComponent(errorMsg);
+      messageDiv.className = 'message error';
+      messageDiv.style.display = 'block';
+    }
   </script>
 </body>
 </html>

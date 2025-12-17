@@ -46,13 +46,11 @@ class AdminDashboard {
   // The following methods are placeholders expecting existing implementations in the original class.
   // They keep names so HTML bindings continue to work. You can progressively move their bodies here or to modules.
   updateStats(stats) {
-    this._el('pendingCount').textContent = stats?.pending_verification || 0;
     this._el('readyCount').textContent = stats?.ready_for_claim || 0;
     this._el('claimedCount').textContent = stats?.claimed_this_month || 0;
     this._el('unresolvedCount').textContent = stats?.unresolved_reports || 0;
     this._el('reportedCount').textContent = stats?.reported_messages || 0;
     this._el('inactiveCount').textContent = stats?.inactive_users || 0;
-    this._el('pendingTrend').textContent = '+12%';
     this._el('readyTrend').textContent = '+8%';
     this._el('claimedTrend').textContent = '+15%';
     this._el('unresolvedTrend').textContent = '-5%';
@@ -84,12 +82,11 @@ class AdminDashboard {
     container.innerHTML = activities;
   }
   getStatusBadge(obj) {
-    let className = 'status-pending';
-    let text = 'Pending';
+    let className = 'status-lost';
+    let text = 'Lost';
     if (obj.status === 'claimed') { className = 'status-claimed'; text = 'Claimed'; }
-    else if (obj.status === 'found') { className = obj.claimed_by ? 'status-claimed' : 'status-ready'; text = obj.claimed_by ? 'Claimed' : 'Ready'; }
+    else if (obj.status === 'found') { className = obj.claimed_by ? 'status-claimed' : 'status-found'; text = obj.claimed_by ? 'Claimed' : 'Found'; }
     else if (obj.status === 'lost') { className = 'status-lost'; text = 'Lost'; }
-    else if (obj.status === 'returned') { className = 'status-returned'; text = 'Returned'; }
     return `<span class="user-status ${className}">${text}</span>`;
   }
   renderItemsTable() {
@@ -211,6 +208,13 @@ class AdminDashboard {
         this.toggleUserStatus(userId);
       });
     });
+    this._qsa('.delete-user-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const userId = btn.dataset.userId;
+        this.deleteUser(userId);
+      });
+    });
     this._qsa('#usersTableBody tr').forEach(row => {
       row.addEventListener('click', (e) => {
         if (!e.target.closest('.action-buttons')) {
@@ -223,14 +227,16 @@ class AdminDashboard {
   createUserRow(user) {
     const joinDate = new Date(user.created_at).toLocaleDateString();
     const statusClass = user.is_active ? 'status-active' : 'status-inactive';
-    const statusText = user.is_active ? 'Active' : 'Inactive';
-    const actionText = user.is_active ? 'Deactivate' : 'Activate';
+    const statusText = user.is_active ? 'Active' : 'Banned';
+    const actionText = user.is_active ? 'Ban' : 'Unban';
     const actionIcon = user.is_active ? 'fa-user-slash' : 'fa-user-check';
     return `
       <tr style="cursor: pointer;">
         <td>${user.student_id || 'N/A'}</td>
         <td><strong>${user.full_name}</strong></td>
         <td>${user.email}</td>
+        <td>${user.course || user.program || 'N/A'}</td>
+        <td>${user.year_level || 'N/A'}</td>
         <td><span class="user-status ${user.role === 'admin' ? 'status-active' : 'status-pending'}">${user.role}</span></td>
         <td><span class="user-status ${statusClass}">${statusText}</span></td>
         <td>${joinDate}</td>
@@ -241,6 +247,9 @@ class AdminDashboard {
             </button>
             <button class="btn-icon" onclick="adminDashboard.messageUser(${user.id})" title="Message">
               <i class="fas fa-envelope"></i>
+            </button>
+            <button class="btn-icon delete delete-user-btn" data-user-id="${user.id}" title="Delete">
+              <i class="fas fa-trash"></i>
             </button>
           </div>
         </td>
@@ -257,12 +266,12 @@ class AdminDashboard {
   async toggleUserStatus(userId) {
     const user = (this.users || []).find(u => u.id == userId);
     if (!user) return;
-    const action = user.is_active ? 'deactivate' : 'activate';
+    const action = user.is_active ? 'ban' : 'unban';
     if (!confirm(`Are you sure you want to ${action} this user?`)) return;
     try {
       const response = await fetch(`/api/admin/users/${userId}/toggle-active`, { method: 'POST' });
       const data = await response.json();
-      if (data.success) { this.showNotification(`User ${action}d successfully`, 'success'); await this.loadUsers(); this._closeModal('userDetailModal'); }
+      if (data.success) { this.showNotification(`User ${action}ned successfully`, 'success'); await this.loadUsers(); this._closeModal('userDetailModal'); }
       else { this.showNotification(data.error || `Failed to ${action} user`, 'error'); }
     } catch { this.showNotification('Error updating user status', 'error'); }
   }
@@ -271,6 +280,8 @@ class AdminDashboard {
     if (!user) { this.showNotification('User not found', 'error'); return; }
     const modal = this._el('userDetailModal');
     const content = this._el('userDetailsContent');
+    const reportedItems = (this.allReports || []).filter(it => String(it.reported_by) === String(userId));
+    const itemsHtml = reportedItems.length ? reportedItems.map(it => `<div style="padding:8px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><div><strong>${it.item_name}</strong><div style="font-size:0.85rem; color:#666;">${new Date(it.created_at).toLocaleDateString()}</div></div><span class="user-status ${this.getStatusClass(it)}">${this.getStatusText(it)}</span></div>`).join('') : '<div style="color:#666;">No reported items</div>';
     content.innerHTML = `
       <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
         <div style="width: 80px; height: 80px; border-radius: 50%; background: #2E7D32; color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold;">${user.full_name?.charAt(0).toUpperCase() || 'U'}</div>
@@ -278,12 +289,47 @@ class AdminDashboard {
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
         <div class="detail-group"><div class="detail-label">Student ID</div><div class="detail-value">${user.student_id || 'N/A'}</div></div>
+        <div class="detail-group"><div class="detail-label">Course</div><div class="detail-value">${user.course || user.program || 'N/A'}</div></div>
+        <div class="detail-group"><div class="detail-label">Year Level</div><div class="detail-value">${user.year_level || 'N/A'}</div></div>
+        <div class="detail-group"><div class="detail-label">Phone Number</div><div class="detail-value">${user.phone_number || 'N/A'}</div></div>
         <div class="detail-group"><div class="detail-label">Role</div><div class="detail-value">${user.role}</div></div>
-        <div class="detail-group"><div class="detail-label">Status</div><div class="detail-value"><span class="user-status ${user.is_active ? 'status-active' : 'status-inactive'}">${user.is_active ? 'Active' : 'Inactive'}</span></div></div>
+        <div class="detail-group"><div class="detail-label">Status</div><div class="detail-value"><span class="user-status ${user.is_active ? 'status-active' : 'status-inactive'}">${user.is_active ? 'Active' : 'Banned'}</span></div></div>
         <div class="detail-group"><div class="detail-label">Joined Date</div><div class="detail-value">${new Date(user.created_at).toLocaleDateString()}</div></div>
+      </div>
+      <div class="detail-group" style="margin-top: 20px;">
+        <div class="detail-label">Reported Items</div>
+        <div class="detail-value">${itemsHtml}</div>
+      </div>
+      <div class="detail-group" style="margin-top: 20px;">
+        <div class="detail-label">Message</div>
+        <div class="detail-value">
+          <textarea id="userDetailMessageText" class="form-control" rows="3" placeholder="Type a message..."></textarea>
+          <div style="display:flex; gap:10px; margin-top:8px;">
+            <button class="btn btn-outline" onclick="adminDashboard.sendMessageToUserFromDetails(${userId})">Send Message</button>
+          </div>
+        </div>
       </div>`;
     modal.dataset.userId = userId;
     this._openModal('userDetailModal');
+  }
+  async deleteUser(userId) {
+    const user = (this.users || []).find(u => u.id == userId);
+    if (!user) return;
+    if (!confirm('Are you sure you want to delete this user account?')) return;
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE', credentials: 'include' });
+      const data = await response.json();
+      if (data.success) { this.showNotification('User account deleted', 'success'); await this.loadUsers(); this._closeModal('userDetailModal'); }
+      else { this.showNotification(data.error || 'Failed to delete user', 'error'); }
+    } catch { this.showNotification('Error deleting user', 'error'); }
+  }
+  async sendMessageToUserFromDetails(userId) {
+    const text = this._el('userDetailMessageText')?.value?.trim() || '';
+    if (!text) { this.showNotification('Message is required', 'error'); return; }
+    const fd = this._buildFormData({ receiver_id: userId, message: text || '' }, 'image', null);
+    const data = await this._postForm('/api/messages/send', fd);
+    if (data.success) { this.showNotification('Message sent', 'success'); this._clearInput('userDetailMessageText'); }
+    else { this.showNotification(data.error || 'Failed to send message', 'error'); }
   }
   switchTab(tabName) {
     document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
@@ -452,11 +498,8 @@ class AdminDashboard {
     if (item.image_base64) imageHTML = `<div class=\"detail-group\"><div class=\"detail-label\">Image</div><img src=\"data:image/jpeg;base64,${item.image_base64}\" alt=\"${item.item_name}\" class=\"detail-image\" style=\"max-width: 300px; max-height: 300px; object-fit: contain;\"></div>`;
     else if (item.image_url) imageHTML = `<div class=\"detail-group\"><div class=\"detail-label\">Image</div><img src=\"${item.image_url}\" alt=\"${item.item_name}\" class=\"detail-image\" style=\"max-width: 300px; max-height: 300px; object-fit: contain;\"></div>`;
     let actionsHTML = `
-      ${item.status === 'claimed' ? `<div class=\"detail-group\"><div class=\"detail-label\">Claimed By</div><div class=\"detail-value\">${item.claimed_by_name || 'Unknown'}</div></div>` : ''}
-      <div class="detail-group"><div class="detail-label">Set Claimer (Student ID)</div><div class="detail-value"><div style="display:flex; gap:8px; align-items:center;"><input type="text" id="setClaimerStudentId" class="form-control" placeholder="e.g., 20XX-XXXXX" style="max-width:220px;"><button class="btn btn-outline" onclick="adminDashboard.setClaimerByStudentId(${itemId})"><i class="fas fa-user-check"></i> Set Claimer</button></div></div></div>
-      ${item.status === 'claimed' ? `<div style=\"display:flex; gap:10px; margin: 10px 0;\"><button class=\"btn btn-primary\" onclick=\"adminDashboard.markItemReturned(${itemId})\"><i class=\"fas fa-check\"></i> Mark Returned</button><button class=\"btn btn-danger\" onclick=\"adminDashboard.rejectClaim(${itemId})\"><i class=\"fas fa-times\"></i> Reject Claim</button>${item.claimed_by ? `<button class=\"btn btn-outline\" onclick=\"adminDashboard.requestProof(${itemId}, ${item.claimed_by})\"><i class=\"fas fa-bell\"></i> Request Proof</button>` : ''}</div>` : ''}
       <div style="display:flex; gap:10px; margin: 10px 0;"><button class="btn btn-danger" onclick="adminDashboard.permanentlyDeleteItem(${itemId})"><i class="fas fa-trash"></i> Permanently Delete</button></div>
-      <div class="detail-group"><div class="detail-label">Message</div><div class="detail-value"><textarea id="adminMessageText" class="form-control" rows="3" placeholder="Type a message..."></textarea><input type="file" id="adminMessageImage" accept="image/*" style="margin-top:8px;"><div style="display:flex; gap:10px; margin-top:8px;"><button class="btn btn-outline" onclick="adminDashboard.sendAdminMessage(${item.reported_by})">Message Reporter</button>${item.claimed_by ? `<button class=\"btn btn-outline\" onclick=\"adminDashboard.sendAdminMessage(${item.claimed_by})\">Message Claimer</button>` : ''}</div></div></div>`;
+      <div class="detail-group"><div class="detail-label">Message</div><div class="detail-value"><textarea id="adminMessageText" class="form-control" rows="3" placeholder="Type a message..."></textarea><div style="display:flex; gap:10px; margin-top:8px;"><button class="btn btn-outline" onclick="adminDashboard.sendAdminMessage(${item.reported_by})">Message Reporter</button></div></div></div>`;
     content.innerHTML = `
       <div>
         <div class="detail-group"><div class="detail-label">Item Name</div><div class="detail-value">${item.item_name}</div></div>
@@ -475,8 +518,8 @@ class AdminDashboard {
       </div>`;
     this._el('itemDetailModal').dataset.itemId = itemId; this._openModal('itemDetailModal');
   }
-  getStatusClass(item) { if (item.status === 'claimed') return 'status-claimed'; if (item.status === 'found') return item.claimed_by ? 'status-claimed' : 'status-ready'; if (item.status === 'lost') return 'status-lost'; if (item.status === 'returned') return 'status-returned'; return 'status-pending'; }
-  getStatusText(item) { if (item.status === 'claimed') return 'Claimed'; if (item.status === 'found') return item.claimed_by ? 'Claimed' : 'Ready'; if (item.status === 'lost') return 'Lost'; if (item.status === 'returned') return 'Returned'; return 'Pending'; }
+  getStatusClass(item) { if (item.status === 'claimed') return 'status-claimed'; if (item.status === 'found') return item.claimed_by ? 'status-claimed' : 'status-found'; if (item.status === 'lost') return 'status-lost'; return 'status-lost'; }
+  getStatusText(item) { if (item.status === 'claimed') return 'Claimed'; if (item.status === 'found') return item.claimed_by ? 'Claimed' : 'Found'; if (item.status === 'lost') return 'Lost'; return 'Lost'; }
   showAdminEditItemModal(itemId) {
     const item = (this.allReports || []).find(r => r.id == itemId);
     if (!item) return;
@@ -516,14 +559,6 @@ class AdminDashboard {
     if (!user) { this.showNotification('No user found for that Student ID', 'error'); return; }
     this.approveClaim(itemId, user.id);
   }
-  async markItemReturned(itemId) {
-    try {
-      const response = await fetch(`/api/admin/items/${itemId}/status`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'returned' }), credentials: 'include' });
-      const data = await response.json();
-      if (data.success) { this.showNotification('Item marked as returned', 'success'); await this.loadAllReports(); this._closeModal('itemDetailModal'); }
-      else { this.showNotification(data.error || 'Failed to update item', 'error'); }
-    } catch { this.showNotification('Error updating item', 'error'); }
-  }
   async rejectClaim(itemId) {
     try {
       const response = await fetch(`/api/admin/items/${itemId}/reject-claim`, { method: 'POST', headers: { 'Accept': 'application/json' }, credentials: 'include' });
@@ -562,7 +597,7 @@ class AdminDashboard {
         <div class="message-content">${notif.message || ''}</div>
         <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end;">
           ${relatedBtn}
-          <button class="btn btn-outline btn-small mark-read-btn"><i class="fas fa-check"></i> Mark as Read</button>
+          ${notif.is_read ? '' : '<button class="btn btn-outline btn-small mark-read-btn"><i class="fas fa-check"></i> Mark as Read</button>'}
           <button class="btn btn-danger btn-small delete-notif-btn"><i class="fas fa-trash"></i> Delete</button>
         </div>
       </div>`;
@@ -591,7 +626,6 @@ class AdminDashboard {
     this._el('adminMessageUserId').value = userId;
     const titleEl = this._el('adminUserMessageTitle'); if (titleEl) titleEl.textContent = `Message ${user?.full_name || 'User'}`;
     this._clearInput('adminUserMessageText');
-    const fileInput = this._el('adminUserMessageImage'); if (fileInput) fileInput.value = '';
     this._openModal('adminUserMessageModal');
   }
   logout() { return Auth.logout(); }
@@ -608,9 +642,8 @@ class AdminDashboard {
   async submitAdminUserMessage() {
     const receiverId = this._el('adminMessageUserId').value;
     const text = this._el('adminUserMessageText').value.trim();
-    const fileInput = this._el('adminUserMessageImage');
-    if (!text && !(fileInput && fileInput.files && fileInput.files[0])) { this.showNotification('Message is required', 'error'); return; }
-    const fd = this._buildFormData({ receiver_id: receiverId, message: text || '' }, 'image', fileInput);
+    if (!text) { this.showNotification('Message is required', 'error'); return; }
+    const fd = this._buildFormData({ receiver_id: receiverId, message: text || '' }, 'image', null);
     const data = await this._postForm('/api/messages/send', fd);
     if (data.success) { this.showNotification('Message sent', 'success'); this._closeModal('adminUserMessageModal'); } else { this.showNotification(data.error || 'Failed to send message', 'error'); }
   }
@@ -618,11 +651,10 @@ class AdminDashboard {
   async sendAdminMessage(receiverId) {
     const itemId = this._el('itemDetailModal').dataset.itemId;
     const text = this._el('adminMessageText').value.trim();
-    const fileInput = this._el('adminMessageImage');
     if (!text) { this.showNotification('Message is required', 'error'); return; }
-    const fd = this._buildFormData({ receiver_id: receiverId, item_id: itemId, message: text }, 'image', fileInput);
+    const fd = this._buildFormData({ receiver_id: receiverId, item_id: itemId, message: text }, 'image', null);
     const data = await this._postForm('/api/messages/send', fd);
-    if (data.success) { this.showNotification('Message sent', 'success'); this._clearInput('adminMessageText'); if (fileInput) fileInput.value = ''; } else { this.showNotification(data.error || 'Failed to send message', 'error'); }
+    if (data.success) { this.showNotification('Message sent', 'success'); this._clearInput('adminMessageText'); } else { this.showNotification(data.error || 'Failed to send message', 'error'); }
   }
 }
 

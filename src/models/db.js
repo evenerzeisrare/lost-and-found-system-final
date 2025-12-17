@@ -26,6 +26,18 @@ async function initializeDatabase() {
       }
     } catch (e) {}
     try {
+      const [collegeCol] = await connection.execute(`SHOW COLUMNS FROM users LIKE 'college'`);
+      if (collegeCol.length === 0) {
+        await connection.execute(`ALTER TABLE users ADD COLUMN college VARCHAR(50) NULL AFTER phone_number`);
+      }
+    } catch (e) {}
+    try {
+      const [programCol] = await connection.execute(`SHOW COLUMNS FROM users LIKE 'program'`);
+      if (programCol.length === 0) {
+        await connection.execute(`ALTER TABLE users ADD COLUMN program VARCHAR(200) NULL AFTER college`);
+      }
+    } catch (e) {}
+    try {
       const [msgImgCol] = await connection.execute(`SHOW COLUMNS FROM messages LIKE 'image_url'`);
       if (msgImgCol.length === 0) {
         await connection.execute(`ALTER TABLE messages ADD COLUMN image_url VARCHAR(500) NULL`);

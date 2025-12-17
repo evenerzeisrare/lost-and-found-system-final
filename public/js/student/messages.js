@@ -88,8 +88,8 @@ export function showMessageModal(ctx, receiverId, receiverName, itemId = null) {
   const iId = document.getElementById('itemId'); if (iId) iId.value = itemId || '';
   const msg = document.getElementById('messageContent');
   if (msg) {
-    if (itemId) { msg.placeholder = 'Good evening, I found your lost item at [LOCATION]. Please claim it at the guard house.'; msg.value = 'Good evening, I found your lost item at [LOCATION]. Please claim it at the guard house.'; }
-    else { msg.placeholder = 'Please send a message regarding this item.'; msg.value = ''; }
+    msg.placeholder = 'Type your message...';
+    msg.value = '';
   }
   if (modal) modal.style.display = 'flex';
 }
@@ -98,14 +98,12 @@ export async function sendMessage(ctx) {
   const receiverId = document.getElementById('receiverId')?.value;
   const message = document.getElementById('messageContent')?.value || '';
   const itemId = document.getElementById('itemId')?.value || '';
-  const imageInput = document.getElementById('messageImage');
   if (!message.trim()) { alert('Please enter a message'); return; }
   try {
     const fd = new FormData();
     fd.append('receiver_id', receiverId);
     fd.append('item_id', itemId || '');
     fd.append('message', message);
-    if (imageInput && imageInput.files && imageInput.files[0]) fd.append('image', imageInput.files[0]);
     const data = await apiSendMessage(fd);
     if (data && data.success) { alert('Message sent successfully!'); hideMessageModal(); await loadMessages(ctx); }
     else { alert(data?.error || 'Failed to send message'); }
@@ -118,8 +116,6 @@ export function showSendMessageModal(ctx) {
   const reporterId = modal?.getAttribute('data-reporter-id');
   const reporterName = modal?.getAttribute('data-reporter-name') || 'Owner';
   showMessageModal(ctx, reporterId, reporterName, itemId);
-  const content = document.getElementById('messageContent');
-  if (content) { content.placeholder = 'Good evening, I found your lost item at [LOCATION]. Please claim it at the guard house.'; content.value = 'Good evening, I found your lost item at [LOCATION]. Please claim it at the guard house.'; }
 }
 
 export function showNewMessageModal(ctx) {

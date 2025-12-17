@@ -570,7 +570,6 @@
             
             <div class="tabs">
                 <div class="tab active" data-tab="all">All Items</div>
-                <div class="tab" data-tab="pending">Pending</div>
                 <div class="tab" data-tab="claimed">Claimed</div>
             </div>
             
@@ -580,11 +579,6 @@
                 </div>
             </div>
             
-            <div class="tab-content" id="tabPending">
-                <div class="items-grid" id="myItemsGridPending">
-                    <!-- Pending items will be loaded here -->
-                </div>
-            </div>
             
             
             
@@ -634,6 +628,9 @@
                 <div class="profile-header">
                     <div class="profile-avatar" id="profileAvatar">S</div>
                     <img id="profileAvatarImg" alt="Profile Image" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: none;" onerror="this.style.display='none'">
+                    <button id="profileCameraBtn" type="button" style="display:none; position:absolute; left:70px; bottom:-5px; width:32px; height:32px; border-radius:50%; border:none; background:#2E7D32; color:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.2); cursor:pointer;">
+                        <i class="fas fa-camera"></i>
+                    </button>
                     <div class="profile-info">
                         <div class="profile-name" id="profileName">Student Name</div>
                         <div class="profile-email" id="profileEmail">email@carsu.edu.ph</div>
@@ -643,34 +640,73 @@
                 
                 
                 
-                <h3 style="margin: 30px 0 20px; color: var(--primary);">Update Profile</h3>
+                <h3 style="margin: 30px 0 20px; color: var(--primary);">Personal Information</h3>
                 <form id="profileForm">
-                    <div class="form-group">
-                        <label for="profileEmailInput">Email (read-only)</label>
-                        <input type="email" id="profileEmailInput" class="form-control" readonly>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label for="fullNameInput">Full Name</label>
+                            <input type="text" id="fullNameInput" class="form-control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentId">Student ID</label>
+                            <input type="text" id="studentId" class="form-control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="profileEmailInput">Carsu Email</label>
+                            <input type="email" id="profileEmailInput" class="form-control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="phoneNumber">Phone Number</label>
+                            <input type="tel" id="phoneNumber" class="form-control" placeholder="Enter your phone number" pattern="^[0-9+()\\-\\s]{7,20}$" maxlength="20" disabled>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="profileImage">Profile Image</label>
-                        <input type="file" id="profileImage" accept="image/*" class="form-control">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
+                        <div class="form-group">
+                            <label for="collegeSelect">College</label>
+                            <select id="collegeSelect" class="form-control" disabled>
+                                <option value="">Select College</option>
+                                <option value="CCIS">CCIS</option>
+                                <option value="CHASS">CHASS</option>
+                                <option value="CEGS">CEGS</option>
+                                <option value="CAA">CAA</option>
+                                <option value="COFES">COFES</option>
+                                <option value="CMNS">CMNS</option>
+                                <option value="CED">CED</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="programInput">Program</label>
+                            <input list="programList" id="programInput" class="form-control" placeholder="Search or select a program" disabled>
+                            <datalist id="programList">
+                                <option value="Bachelor of Science in Biology (BS Biology)">
+                                <option value="Bachelor of Science in Mathematics (BS Mathematics)">
+                                <option value="Bachelor of Science in Applied Mathematics">
+                                <option value="Bachelor of Science in Chemistry">
+                                <option value="Bachelor of Science in Physics">
+                                <option value="Bachelor of Science in Environmental Science">
+                                <option value="Bachelor of Science in Agroforestry">
+                                <option value="Bachelor of Science in Forestry">
+                                <option value="Bachelor of Agricultural Technology">
+                                <option value="Bachelor of Science in Agriculture">
+                                <option value="Bachelor of Arts in Sociology (AB Sociology)">
+                                <option value="Bachelor of Science in Social Work (BSSW)">
+                                <option value="Bachelor of Science in Psychology">
+                                <option value="Bachelor of Science in Computer Science (BSCS)">
+                                <option value="Bachelor of Science in Information Technology (BSIT)">
+                                <option value="Bachelor of Science in Information Systems (BSIS)">
+                                <option value="Bachelor of Geodetic Engineering">
+                                <option value="Bachelor of Science in Mining Engineering">
+                                <option value="Bachelor of Science in Electronics Engineering">
+                                <option value="Bachelor of Secondary Education (BSEd) – Major in Biology">
+                                <option value="Bachelor of Secondary Education (BSEd) – Major in Mathematics">
+                            </datalist>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="phoneNumber">Phone Number</label>
-                        <input type="tel" id="phoneNumber" class="form-control" placeholder="Enter your phone number" pattern="^[0-9+()\-\s]{7,20}$" maxlength="20">
+                    <input type="file" id="profileImage" accept="image/*" style="display:none;">
+                    <div id="profileMessage" class="message" style="display:none; margin-top: 10px;"></div>
+                    <div style="display:flex; justify-content:flex-end; margin-top: 15px;">
+                        <button id="editProfileBtn" type="button" class="btn btn-primary">Edit Profile</button>
                     </div>
-                    <div class="form-group">
-                        <label for="studentId">Student ID (read-only)</label>
-                        <input type="text" id="studentId" class="form-control" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label for="contactMethod">Preferred Contact Method</label>
-                        <select id="contactMethod" class="form-control">
-                            <option value="email">Email</option>
-                            <option value="phone">Phone</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Update Profile
-                    </button>
                 </form>
             </div>
         </div>
@@ -789,8 +825,8 @@
                 <button class="btn btn-outline" id="markClaimedByOwnerBtn" style="display:none;">
                     <i class="fas fa-check"></i> Claimed by the owner
                 </button>
-                <button class="btn btn-outline" id="markReturnedByOwnerBtn" style="display:none;">
-                    <i class="fas fa-undo"></i> Returned by the owner
+                <button class="btn btn-danger" id="reportItemBtn" title="Report this item to admin" style="display:none;">
+                    <i class="fas fa-flag"></i> Report Item
                 </button>
             </div>
         </div>
@@ -814,10 +850,6 @@
                     <div class="form-group">
                         <label for="messageContent">Message:</label>
                         <textarea id="messageContent" class="form-control" rows="5" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="messageImage">Attach Image (optional)</label>
-                        <input type="file" id="messageImage" accept="image/*" />
                     </div>
                 </form>
             </div>
@@ -919,14 +951,7 @@
             </div>
             <div class="modal-body">
                 <input type="hidden" id="claimProofItemId" />
-                <div class="form-group">
-                    <label for="claimProofClaimerName">Name of Claimer *</label>
-                    <input type="text" id="claimProofClaimerName" class="form-control" placeholder="Enter the name of the person who claimed" required />
-                </div>
-                <div class="form-group">
-                    <label for="claimProofNote">Note (optional)</label>
-                    <input type="text" id="claimProofNote" class="form-control" placeholder="Add a note" />
-                </div>
+                
                 <div class="form-group">
                     <label for="claimProofFile">Upload proof image (required)</label>
                     <input type="file" id="claimProofFile" accept="image/*" />

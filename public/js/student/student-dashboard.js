@@ -41,7 +41,7 @@ function initEventListeners() {
       tab.classList.add('active');
       document.querySelectorAll('.tab-content').forEach(content => { content.classList.remove('active'); });
       document.getElementById(`tab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`)?.classList.add('active');
-      if (tabName === 'all') loadMyItems(ctx, 'all'); else if (tabName === 'pending') loadMyItems(ctx, 'pending'); else if (tabName === 'claimed') loadMyItems(ctx, 'claimed');
+      if (tabName === 'all') loadMyItems(ctx, 'all'); else if (tabName === 'claimed') loadMyItems(ctx, 'claimed');
     });
   });
   document.getElementById('reportLostBtn')?.addEventListener('click', () => showReportModal(ctx, 'lost'));
@@ -59,6 +59,31 @@ function initEventListeners() {
   document.getElementById('categoryFilter')?.addEventListener('change', () => { filterBrowseItems(ctx); });
   document.getElementById('statusFilter')?.addEventListener('change', () => { filterBrowseItems(ctx); });
   document.getElementById('itemImage')?.addEventListener('change', (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (ev) => { const p = document.getElementById('imagePreview'); const img = document.getElementById('previewImage'); if (p) p.style.display = 'block'; if (img) img.src = ev.target.result; }; reader.readAsDataURL(file); } });
+  document.getElementById('profileImage')?.addEventListener('change', (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (ev) => { const img = document.getElementById('profileAvatarImg'); const avatar = document.getElementById('profileAvatar'); if (img) { img.src = ev.target.result; img.style.display = 'block'; } if (avatar) avatar.style.display = 'none'; }; reader.readAsDataURL(file); } });
+  document.getElementById('profileCameraBtn')?.addEventListener('click', () => { if (!ctx.profileEditing) return; document.getElementById('profileImage')?.click(); });
+  document.getElementById('editProfileBtn')?.addEventListener('click', async () => {
+    const phone = document.getElementById('phoneNumber');
+    const college = document.getElementById('collegeSelect');
+    const program = document.getElementById('programInput');
+    const cameraBtn = document.getElementById('profileCameraBtn');
+    const btn = document.getElementById('editProfileBtn');
+    if (!ctx.profileEditing) {
+      ctx.profileEditing = true;
+      if (phone) phone.disabled = false;
+      if (college) college.disabled = false;
+      if (program) program.disabled = false;
+      if (cameraBtn) cameraBtn.style.display = 'block';
+      if (btn) btn.innerHTML = '<i class="fas fa-save"></i> Save Profile';
+    } else {
+      await updateProfile(ctx);
+      ctx.profileEditing = false;
+      if (phone) phone.disabled = true;
+      if (college) college.disabled = true;
+      if (program) program.disabled = true;
+      if (cameraBtn) cameraBtn.style.display = 'none';
+      if (btn) btn.innerHTML = 'Edit Profile';
+    }
+  });
   document.getElementById('deleteAllMessagesBtn')?.addEventListener('click', () => { deleteAllMessages(ctx); });
   document.getElementById('sendMessage')?.addEventListener('click', () => { sendMessage(ctx); });
   document.getElementById('cancelMessage')?.addEventListener('click', () => { hideMessageModal(); });

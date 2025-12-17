@@ -9,6 +9,8 @@ export async function loadNotifications(ctx) {
       const unreadFiltered = filtered.filter(n => !n.is_read).length;
       const notifBadge = document.getElementById('notificationBadge');
       if (notifBadge) { notifBadge.textContent = String(unreadFiltered); notifBadge.style.display = unreadFiltered > 0 ? 'flex' : 'none'; }
+      const markAllBtn = document.getElementById('markAllRead');
+      if (markAllBtn) markAllBtn.style.display = unreadFiltered > 0 ? 'inline-block' : 'none';
       if (document.getElementById('notificationsModal')?.style.display === 'flex') renderNotifications(ctx, filtered);
     }
   } catch {}
@@ -28,9 +30,7 @@ export function renderNotifications(ctx, notifications) {
                 </div>
                 <div class="message-content">${notif.message}</div>
                 <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end;">
-                    <button class="btn btn-outline btn-small mark-read-btn">
-                        <i class="fas fa-check"></i> Mark as Read
-                    </button>
+                    ${notif.is_read ? '' : '<button class="btn btn-outline btn-small mark-read-btn"><i class="fas fa-check"></i> Mark as Read</button>'}
                     <button class="btn btn-danger btn-small delete-notif-btn">
                         <i class="fas fa-trash"></i> Delete
                     </button>
