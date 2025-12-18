@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register - CSU Lost & Found</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/register.css">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <img src="assets/img/csu-logo.png" alt="CSU Logo" class="auth-logo">
+        <h1>CSU Lost & Found</h1>
+        <p>Create your student account</p>
+      </div>
+
+      <!-- Message Display -->
+      <div id="message" class="message"></div>
+
+      <form class="auth-form" id="registerForm">
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" required placeholder="Enter your full name">
+          <i class="fas fa-user input-icon"></i>
+        </div>
+
+        <div class="form-group">
+          <label for="studentId">Student ID</label>
+          <input type="text" id="studentId" required placeholder="e.g., 2020-12345" pattern="[0-9]{4}-[0-9]{5}">
+          <i class="fas fa-id-card input-icon"></i>
+          <small>Format: YYYY-XXXXX</small>
+        </div>
+
+        <div class="form-group">
+          <label for="email">CSU Email</label>
+          <input type="email" id="email" required placeholder="yourname@carsu.edu.ph">
+          <i class="fas fa-envelope input-icon"></i>
+          <small>Must be a valid @carsu.edu.ph email address</small>
+        </div>
+
+        <div class="form-group has-toggle">
+          <label for="password">Password</label>
+          <input type="password" id="password" minlength="6" required placeholder="Minimum 6 characters">
+          <span class="password-toggle" onclick="togglePassword('password', this)">
+            <i class="fas fa-eye"></i>
+          </span>
+          <div class="password-strength" id="passwordStrength">
+            <div class="password-strength-bar"></div>
+          </div>
+        </div>
+
+        <div class="form-group has-toggle">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" required placeholder="Re-enter your password">
+          <span class="password-toggle" onclick="togglePassword('confirmPassword', this)">
+            <i class="fas fa-eye"></i>
+          </span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">
+          <i class="fas fa-user-plus"></i> Create Account
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Already have an account? <a href="login.html">Sign in here</a></p>
+        <p><a href="index.html">← Back to Home</a></p>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // Password toggle function
+  function togglePassword(inputId, toggleBtn) {
+    const input = document.getElementById(inputId);
+    const icon = toggleBtn.querySelector('i');
+    
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
+    } else {
+      input.type = 'password';
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
+    }
+  }
+
+  // Password strength checker
+  const passwordInput = document.getElementById('password');
+  const strengthIndicator = document.getElementById('passwordStrength');
+
+  passwordInput.addEventListener('input', () => {
+    const password = passwordInput.value;
+    strengthIndicator.style.display = 'block';
+    
+    if (password.length < 6) {
+      strengthIndicator.className = 'password-strength weak';
+    } else if (password.length < 10) {
+      strengthIndicator.className = 'password-strength medium';
+    } else {
+      strengthIndicator.className = 'password-strength strong';
+    }
+  });
+
+  // Real-time password match validation
+  const confirmPasswordInput = document.getElementById('confirmPassword');
+  
+  confirmPasswordInput.addEventListener('input', () => {
+    if (confirmPasswordInput.value === passwordInput.value && confirmPasswordInput.value !== '') {
+      confirmPasswordInput.style.borderColor = '#4caf50';
+    } else if (confirmPasswordInput.value !== '') {
+      confirmPasswordInput.style.borderColor = '#f44336';
+    } else {
+      confirmPasswordInput.style.borderColor = '#e0e0e0';
+    }
+  });
+
+  // Form submission
+  document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const fullName = document.getElementById('fullName').value;
+    const studentId = document.getElementById('studentId').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const messageDiv = document.getElementById('message');
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    
+    // Validation
+    if (password !== confirmPassword) {
+      messageDiv.textContent = 'Passwords do not match';
+      messageDiv.className = 'message error';
+      messageDiv.style.display = 'block';
+      return;
+    }
+    
+    if (!email.endsWith('@carsu.edu.ph')) {
+      messageDiv.textContent = 'Please use a valid @carsu.edu.ph email address';
+      messageDiv.className = 'message error';
+      messageDiv.style.display = 'block';
+      return;
+    }
+
+    if (password.length < 6) {
+      messageDiv.textContent = 'Password must be at least 6 characters';
+      messageDiv.className = 'message error';
+      messageDiv.style.display = 'block';
+      return;
+    }
+    
+    // Show loading state
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin loading"></i> Creating Account...';
+    submitBtn.disabled = true;
+    
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, studentId, email, password })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        messageDiv.textContent = 'Registration successful! Redirecting to login...';
+        messageDiv.className = 'message success';
+        messageDiv.style.display = 'block';
+        
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 2000);
+      } else {
+        messageDiv.textContent = '' + (data.error || 'Registration failed');
+        messageDiv.className = 'message error';
+        messageDiv.style.display = 'block';
+        submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+        submitBtn.disabled = false;
+      }
+    } catch (error) {
+      messageDiv.textContent = 'Server error. Please try again.';
+      messageDiv.className = 'message error';
+      messageDiv.style.display = 'block';
+      submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+      submitBtn.disabled = false;
+      console.error('Registration error:', error);
+    }
+  });
+</script>
+
+</body>
+</html>

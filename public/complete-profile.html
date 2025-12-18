@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete Your Profile - CSU Lost & Found</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/complete-profile.css">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <img src="assets/img/csu-logo.png" alt="CSU Logo" class="auth-logo" onerror="this.style.display='none'">
+        <h1>Complete Your Profile</h1>
+        <p>Please provide additional information to finish your registration</p>
+        <div class="required-note"><span>*</span> All fields are required</div>
+      </div>
+      
+        <form id="completeForm" class="auth-form">
+        <!-- Form Progress Indicator -->
+        <div class="form-progress">
+            <div class="progress-dot completed"></div>
+            <div class="progress-dot active"></div>
+            <div class="progress-dot"></div>
+        </div>
+
+        <div class="form-group">
+            <label>Email (from Google) <span>*</span></label>
+            <input type="email" id="email" readonly required>
+            <i class="fas fa-envelope input-icon"></i>
+        </div>
+        
+        <div class="form-group">
+            <label>Full Name <span>*</span></label>
+            <input type="text" id="fullname" readonly required>
+            <i class="fas fa-user input-icon"></i>
+        </div>
+        
+        <div class="form-group">
+            <label>Student ID <span>*</span></label>
+            <input type="text" id="studentId" pattern="231-\d{5}" placeholder="231-XXXXX" required>
+            <i class="fas fa-id-card input-icon"></i>
+            <div class="validation-hint" id="studentIdHint">Format: 231-XXXXX</div>
+        </div>
+        
+        <div class="form-group">
+            <label>College <span>*</span></label>
+            <select id="college" required>
+            <option value="">Select College</option>
+            <option value="CCIS">CCIS - College of Computing and Information Sciences</option>
+            <option value="CHASS">CHASS - College of Humanities and Social Sciences</option>
+            <option value="CEGS">CEGS - College of Engineering and Geo-Sciences</option>
+            <option value="CAA">CAA - College of Agriculture and Agri-Industries</option>
+            <option value="COFES">COFES - College of Forestry and Environmental Science</option>
+            <option value="CMNS">CMNS - College of Mathematics and Natural Sciences</option>
+            <option value="CED">CED - College of Education</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Program <span>*</span></label>
+            <input list="programList" id="program" placeholder="Search or select your program" required>
+            <i class="fas fa-graduation-cap input-icon"></i>
+            <datalist id="programList">
+            <option value="Bachelor of Science in Biology (BS Biology)">
+            <option value="Bachelor of Science in Mathematics (BS Mathematics)">
+            <option value="Bachelor of Science in Applied Mathematics">
+            <option value="Bachelor of Science in Chemistry">
+            <option value="Bachelor of Science in Physics">
+            <option value="Bachelor of Science in Environmental Science">
+            <option value="Bachelor of Science in Agroforestry">
+            <option value="Bachelor of Science in Forestry">
+            <option value="Bachelor of Agricultural Technology">
+            <option value="Bachelor of Science in Agriculture">
+            <option value="Bachelor of Arts in Sociology (AB Sociology)">
+            <option value="Bachelor of Science in Social Work (BSSW)">
+            <option value="Bachelor of Science in Psychology">
+            <option value="Bachelor of Science in Computer Science (BSCS)">
+            <option value="Bachelor of Science in Information Technology (BSIT)">
+            <option value="Bachelor of Science in Information Systems (BSIS)">
+            <option value="Bachelor of Geodetic Engineering">
+            <option value="Bachelor of Science in Mining Engineering">
+            <option value="Bachelor of Science in Electronics Engineering">
+            <option value="Bachelor of Secondary Education (BSEd) – Major in Biology">
+            <option value="Bachelor of Secondary Education (BSEd) – Major in Mathematics">
+            </datalist>
+        </div>
+        
+        <div class="form-group">
+            <label>Phone Number <span>*</span></label>
+            <input type="tel" id="phoneNumber" pattern="09\d{9}" placeholder="09XXXXXXXXX" required>
+            <i class="fas fa-phone input-icon"></i>
+            <div class="validation-hint" id="phoneHint">Format: 09XXXXXXXXX (11 digits)</div>
+        </div>
+        
+        <input type="hidden" id="googleId">
+        <input type="hidden" id="avatarUrl">
+        
+        <button type="submit" class="btn-primary">
+            <i class="fas fa-check-circle"></i> Complete Registration
+        </button>
+        
+        <div id="message" class="message"></div>
+        </form>
+            
+      <div id="message" class="message error"></div>
+      
+      <div class="auth-footer">
+        <p><a href="/login.html"><i class="fas fa-arrow-left"></i> Back to Login</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    document.getElementById('email').value = params.get('email') || '';
+    document.getElementById('fullname').value = params.get('name') || '';
+    document.getElementById('googleId').value = params.get('googleId') || '';
+    document.getElementById('avatarUrl').value = params.get('avatar') || '';
+
+    document.getElementById('completeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = {
+        email: document.getElementById('email').value,
+        fullname: document.getElementById('fullname').value,
+        googleId: document.getElementById('googleId').value,
+        avatarUrl: document.getElementById('avatarUrl').value,
+        studentId: document.getElementById('studentId').value,
+        college: document.getElementById('college').value,
+        program: document.getElementById('program').value,
+        phoneNumber: document.getElementById('phoneNumber').value
+      };
+
+      try {
+        const response = await fetch('/api/auth/complete-google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          document.getElementById('message').textContent = 'Profile completed! Redirecting...';
+          document.getElementById('message').className = 'message success';
+          document.getElementById('message').style.display = 'block';
+          setTimeout(() => window.location.href = '/student-dashboard.html', 1500);
+        } else {
+          document.getElementById('message').textContent = data.error;
+          document.getElementById('message').className = 'message error';
+          document.getElementById('message').style.display = 'block';
+        }
+      } catch (error) {
+        document.getElementById('message').textContent = 'Server error. Please try again.';
+        document.getElementById('message').className = 'message error';
+        document.getElementById('message').style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

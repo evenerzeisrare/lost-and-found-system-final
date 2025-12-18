@@ -1,0 +1,66 @@
+lost-and-found-system-final/
+├── bcrypt_hash.js
+├── csu_lost_found.sql
+├── kani ang original
+├── package.json
+├── public/
+│   ├── admin-dashboard.html
+│   ├── index.html
+│   ├── login.html
+│   ├── register.html
+│   ├── student-dashboard.html
+│   ├── assets/
+│   ├── css/
+│   │   ├── student-continue.css
+│   │   └── style.css
+│   └── js/
+│       ├── admin/
+│       │   ├── admin-auth.js
+│       │   ├── admin-dashboard.js
+│       │   ├── admin-data.js
+│       │   ├── admin-events.js
+│       │   ├── admin-notifications.js
+│       │   └── admin-ui.js
+│       ├── student/
+│       │   ├── api.js
+│       │   ├── auth.js
+│       │   ├── items.js
+│       │   ├── messages.js
+│       │   ├── notifications.js
+│       │   ├── profile.js
+│       │   ├── student-dashboard.js
+│       │   └── ui.js
+│       └── utils/
+│           └── helpers.js
+├── src/
+│   ├── app.js
+│   ├── server.js
+│   ├── config/
+│   │   └── passport.js
+│   ├── controllers/
+│   │   ├── adminController.js
+│   │   ├── announcementController.js
+│   │   ├── authController.js
+│   │   ├── itemController.js
+│   │   ├── messageController.js
+│   │   ├── notificationController.js
+│   │   └── userController.js
+│   ├── middlewares/
+│   │   ├── authMiddleware.js
+│   │   └── upload.js
+│   ├── models/
+│   │   └── db.js
+│   ├── routes/
+│   │   ├── admin.js
+│   │   ├── announcements.js
+│   │   ├── auth.js
+│   │   ├── items.js
+│   │   ├── messages.js
+│   │   ├── notifications.js
+│   │   ├── pages.js
+│   │   └── users.js
+│   └── services/
+│       ├── adminService.js
+│       ├── messagesService.js
+│       └── notifications.js
+└── uploads/

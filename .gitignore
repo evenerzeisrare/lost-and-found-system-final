@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Build files
+dist/
+build/
+
+# Logs
+npm-debug.log
+yarn-error.log
+
+# System files
+.DS_Store
+
+# IDE folders
+.vscode/
+.idea/
