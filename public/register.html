@@ -5,13 +5,197 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Register - CSU Lost & Found</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<<<<<<< HEAD
   <link rel="stylesheet" href="css/register.css">
+=======
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 450px;
+    }
+
+    .auth-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      padding: 40px 30px;
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .auth-logo {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 15px;
+    }
+
+    .auth-header h1 {
+      color: #2e7d32;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+
+    .auth-header p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .auth-form {
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #2e7d32;
+      box-shadow: 0 0 5px rgba(46, 125, 50, 0.3);
+    }
+
+    .form-group small {
+      color: #666;
+      font-size: 12px;
+      margin-top: 5px;
+      display: block;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: #2e7d32;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #1b5e20;
+    }
+
+    .btn-full {
+      width: 100%;
+    }
+
+    .auth-footer {
+      text-align: center;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+    }
+
+    .auth-footer p {
+      margin-bottom: 10px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .auth-footer a {
+      color: #2e7d32;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .auth-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .message {
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      display: none;
+    }
+
+    .message.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+    }
+
+    .message.error {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ffcdd2;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+    }
+
+    .divider span {
+      flex: 1;
+      height: 1px;
+      background: #ddd;
+    }
+
+    .divider p {
+      padding: 0 15px;
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
 </head>
 <body>
   <div class="auth-container">
     <div class="auth-card">
       <div class="auth-header">
+<<<<<<< HEAD
         <img src="assets/img/csu-logo.png" alt="CSU Logo" class="auth-logo">
+=======
+        <img src="./assets/img/csu-logo.png" alt="CSU Logo" class="auth-logo">
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
         <h1>CSU Lost & Found</h1>
         <p>Create your student account</p>
       </div>
@@ -23,19 +207,27 @@
         <div class="form-group">
           <label for="fullName">Full Name</label>
           <input type="text" id="fullName" required placeholder="Enter your full name">
+<<<<<<< HEAD
           <i class="fas fa-user input-icon"></i>
+=======
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
         </div>
 
         <div class="form-group">
           <label for="studentId">Student ID</label>
+<<<<<<< HEAD
           <input type="text" id="studentId" required placeholder="e.g., 2020-12345" pattern="[0-9]{4}-[0-9]{5}">
           <i class="fas fa-id-card input-icon"></i>
           <small>Format: YYYY-XXXXX</small>
+=======
+          <input type="text" id="studentId" required placeholder="e.g., 2020-12345">
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
         </div>
 
         <div class="form-group">
           <label for="email">CSU Email</label>
           <input type="email" id="email" required placeholder="yourname@carsu.edu.ph">
+<<<<<<< HEAD
           <i class="fas fa-envelope input-icon"></i>
           <small>Must be a valid @carsu.edu.ph email address</small>
         </div>
@@ -57,6 +249,19 @@
           <span class="password-toggle" onclick="togglePassword('confirmPassword', this)">
             <i class="fas fa-eye"></i>
           </span>
+=======
+          <small>Must be a valid @carsu.edu.ph email address</small>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" minlength="6" required>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" required>
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
         </div>
 
         <button type="submit" class="btn btn-primary btn-full">
@@ -71,6 +276,7 @@
     </div>
   </div>
 
+<<<<<<< HEAD
 <script>
   // Password toggle function
   function togglePassword(inputId, toggleBtn) {
@@ -191,5 +397,65 @@
   });
 </script>
 
+=======
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const fullName = document.getElementById('fullName').value;
+      const studentId = document.getElementById('studentId').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const messageDiv = document.getElementById('message');
+      
+      // Validation
+      if (password !== confirmPassword) {
+        messageDiv.textContent = 'Passwords do not match';
+        messageDiv.className = 'message error';
+        messageDiv.style.display = 'block';
+        return;
+      }
+      
+      if (!email.endsWith('@carsu.edu.ph')) {
+        messageDiv.textContent = 'Please use a valid @carsu.edu.ph email address';
+        messageDiv.className = 'message error';
+        messageDiv.style.display = 'block';
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ fullName, studentId, email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          messageDiv.textContent = 'Registration successful! Redirecting to login...';
+          messageDiv.className = 'message success';
+          messageDiv.style.display = 'block';
+          
+          setTimeout(() => {
+            window.location.href = 'login.html';
+          }, 2000);
+        } else {
+          messageDiv.textContent = data.error || 'Registration failed';
+          messageDiv.className = 'message error';
+          messageDiv.style.display = 'block';
+        }
+      } catch (error) {
+        messageDiv.textContent = 'Server error. Please try again.';
+        messageDiv.className = 'message error';
+        messageDiv.style.display = 'block';
+        console.error('Registration error:', error);
+      }
+    });
+  </script>
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
 </body>
 </html>

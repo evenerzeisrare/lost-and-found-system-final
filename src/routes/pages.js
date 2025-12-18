@@ -15,10 +15,13 @@ router.get('/register.html', (req, res) => {
   res.sendFile(path.join(__dirname, '..', '..', 'public', 'register.html'));
 });
 
+<<<<<<< HEAD
 router.get('/complete-profile.html', (req, res) => {
     res.sendFile(path.join(__dirname, '../../public/complete-profile.html'));
 });
 
+=======
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
 router.get('/student-dashboard.html', ensureAuthenticated, (req, res) => {
   if (req.user.role !== 'student') {
     return res.redirect('/admin-dashboard.html');

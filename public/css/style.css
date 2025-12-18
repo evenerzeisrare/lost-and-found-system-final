@@ -101,6 +101,7 @@ header {
     color: var(--primary);
     background-color: rgba(46, 125, 50, 0.1);
 }
+<<<<<<< HEAD
 .nav-links a::after {
     content: '';
     display: block;
@@ -111,6 +112,14 @@ header {
     margin-top: 4px;
 }
 
+=======
+
+.nav-links a.active {
+    color: var(--primary);
+    background-color: rgba(46, 125, 50, 0.1);
+    border-left: 3px solid var(--primary);
+}
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
 
 .user-actions {
     display: flex;
@@ -470,15 +479,21 @@ textarea.form-control {
 
 /* Empty state */
 .empty-state {
+<<<<<<< HEAD
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
+=======
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
     text-align: center;
     padding: 40px;
     color: var(--gray);
     font-style: italic;
+<<<<<<< HEAD
     min-height: 280px;
+=======
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
 }
 
 .empty-state i {

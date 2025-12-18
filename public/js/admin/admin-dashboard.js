@@ -96,7 +96,18 @@ class AdminDashboard {
     const startIndex = (this.currentItemPage - 1) * this.itemsPerPage;
     const paginatedItems = filteredItems.slice(startIndex, startIndex + this.itemsPerPage);
     if (paginatedItems.length === 0) {
+<<<<<<< HEAD
       tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fas fa-box-open"></i>No items found</div></td></tr>`;
+=======
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align: center; padding: 40px; color: #666;">
+            <i class="fas fa-box-open" style="font-size: 2rem; margin-bottom: 10px; display: block; color: #ccc;"></i>
+            No items found
+          </td>
+        </tr>
+      `;
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
       this.updateItemsPagination(0);
       return;
     }
@@ -182,7 +193,18 @@ class AdminDashboard {
     if (!tbody || !this.users) return;
     const filteredUsers = this.filterUsersArray();
     if (filteredUsers.length === 0) {
+<<<<<<< HEAD
       tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-users"></i>No users found</div></td></tr>`;
+=======
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align: center; padding: 40px; color: #666;">
+            <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 10px; display: block; color: #ccc;"></i>
+            No users found
+          </td>
+        </tr>
+      `;
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
       return;
     }
     const studentsOnly = filteredUsers.filter(u => u.role === 'student');
@@ -219,8 +241,16 @@ class AdminDashboard {
     return `
       <tr style="cursor: pointer;">
         <td>${user.student_id || 'N/A'}</td>
+<<<<<<< HEAD
         <td><a href="#" class="user-name-link" onclick="event.stopPropagation(); adminDashboard.showUserDetails(${user.id})"><strong>${user.full_name}</strong></a></td>
         <td>${user.role}</td>
+=======
+        <td><strong>${user.full_name}</strong></td>
+        <td>${user.email}</td>
+        <td>${user.course || user.program || 'N/A'}</td>
+        <td>${user.year_level || 'N/A'}</td>
+        <td><span class="user-status ${user.role === 'admin' ? 'status-active' : 'status-pending'}">${user.role}</span></td>
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
         <td><span class="user-status ${statusClass}">${statusText}</span></td>
         <td>${joinDate}</td>
         <td>
@@ -450,12 +480,21 @@ class AdminDashboard {
             <div><strong>From:</strong> ${message.sender_name} (${message.sender_email})</div>
             <div style="font-size: 0.9rem; color: #666;">${new Date(message.created_at).toLocaleString()}</div>
           </div>
+<<<<<<< HEAD
           <div><strong>To:</strong> ${message.receiver_name} (${message.receiver_email})</div>
+=======
+          <div style="margin-bottom: 10px;"><strong>To:</strong> ${message.receiver_name} (${message.receiver_email})</div>
+          ${message.item_name ? `<div style=\"margin-bottom: 10px;\"><strong>Related Item:</strong> ${message.item_name}</div>` : ''}
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
         </div>
         <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 20px;">
           <strong>Message Content:</strong>
           <div style="margin-top: 10px; padding: 15px; background: #f9f9f9; border-radius: 5px;">${message.message}</div>
         </div>
+<<<<<<< HEAD
+=======
+        ${message.reported_reason ? `<div style=\"background: #fff3cd; padding: 20px; border-radius: 8px; border: 1px solid #ffeaa7;\"><strong><i class=\"fas fa-flag\"></i> Report Reason:</strong><div style=\"margin-top: 10px; padding: 10px; background: white; border-radius: 5px;\">${message.reported_reason}</div></div>` : ''}
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
       </div>`;
     modal.dataset.messageId = messageId; this._openModal('messageDetailModal');
   }
@@ -478,6 +517,7 @@ class AdminDashboard {
     let imageHTML = '';
     if (item.image_base64) imageHTML = `<div class=\"detail-group\"><div class=\"detail-label\">Image</div><img src=\"data:image/jpeg;base64,${item.image_base64}\" alt=\"${item.item_name}\" class=\"detail-image\" style=\"max-width: 300px; max-height: 300px; object-fit: contain;\"></div>`;
     else if (item.image_url) imageHTML = `<div class=\"detail-group\"><div class=\"detail-label\">Image</div><img src=\"${item.image_url}\" alt=\"${item.item_name}\" class=\"detail-image\" style=\"max-width: 300px; max-height: 300px; object-fit: contain;\"></div>`;
+<<<<<<< HEAD
     const isLost = String(item.status).toLowerCase() === 'lost';
     const msgLabel = isLost ? 'Message Owner' : 'Message Reporter';
     let actionsHTML = `
@@ -486,6 +526,11 @@ class AdminDashboard {
         <button class="btn btn-outline" onclick="adminDashboard.messageUser(${item.reported_by})"><i class="fas fa-envelope"></i> ${msgLabel}</button>
       </div>
       `;
+=======
+    let actionsHTML = `
+      <div style="display:flex; gap:10px; margin: 10px 0;"><button class="btn btn-danger" onclick="adminDashboard.permanentlyDeleteItem(${itemId})"><i class="fas fa-trash"></i> Permanently Delete</button></div>
+      <div class="detail-group"><div class="detail-label">Message</div><div class="detail-value"><textarea id="adminMessageText" class="form-control" rows="3" placeholder="Type a message..."></textarea><div style="display:flex; gap:10px; margin-top:8px;"><button class="btn btn-outline" onclick="adminDashboard.sendAdminMessage(${item.reported_by})">Message Reporter</button></div></div></div>`;
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
     content.innerHTML = `
       <div>
         <div class="detail-group"><div class="detail-label">Item Name</div><div class="detail-value">${item.item_name}</div></div>
@@ -610,8 +655,11 @@ class AdminDashboard {
   messageUser(userId) {
     const user = (this.users || []).find(u => u.id == userId);
     this._el('adminMessageUserId').value = userId;
+<<<<<<< HEAD
     const itemId = this._el('itemDetailModal')?.dataset?.itemId || '';
     const itemIdInput = this._el('adminMessageItemId'); if (itemIdInput) itemIdInput.value = itemId;
+=======
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
     const titleEl = this._el('adminUserMessageTitle'); if (titleEl) titleEl.textContent = `Message ${user?.full_name || 'User'}`;
     this._clearInput('adminUserMessageText');
     this._openModal('adminUserMessageModal');
@@ -629,16 +677,33 @@ class AdminDashboard {
 
   async submitAdminUserMessage() {
     const receiverId = this._el('adminMessageUserId').value;
+<<<<<<< HEAD
     const itemId = this._el('adminMessageItemId')?.value || '';
     const text = this._el('adminUserMessageText').value.trim();
     if (!text) { this.showNotification('Message is required', 'error'); return; }
     const payload = itemId ? { receiver_id: receiverId, item_id: itemId, message: text || '' } : { receiver_id: receiverId, message: text || '' };
     const fd = this._buildFormData(payload, 'image', null);
+=======
+    const text = this._el('adminUserMessageText').value.trim();
+    if (!text) { this.showNotification('Message is required', 'error'); return; }
+    const fd = this._buildFormData({ receiver_id: receiverId, message: text || '' }, 'image', null);
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
     const data = await this._postForm('/api/messages/send', fd);
     if (data.success) { this.showNotification('Message sent', 'success'); this._closeModal('adminUserMessageModal'); } else { this.showNotification(data.error || 'Failed to send message', 'error'); }
   }
 
+<<<<<<< HEAD
   async sendAdminMessage(receiverId) {}
+=======
+  async sendAdminMessage(receiverId) {
+    const itemId = this._el('itemDetailModal').dataset.itemId;
+    const text = this._el('adminMessageText').value.trim();
+    if (!text) { this.showNotification('Message is required', 'error'); return; }
+    const fd = this._buildFormData({ receiver_id: receiverId, item_id: itemId, message: text }, 'image', null);
+    const data = await this._postForm('/api/messages/send', fd);
+    if (data.success) { this.showNotification('Message sent', 'success'); this._clearInput('adminMessageText'); } else { this.showNotification(data.error || 'Failed to send message', 'error'); }
+  }
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

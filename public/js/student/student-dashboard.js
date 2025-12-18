@@ -17,7 +17,11 @@ function showPage(page) {
       case 'browse': loadBrowseItems(ctx); break;
       case 'my-items': loadMyItems(ctx, 'all'); break;
       case 'messages': loadMessages(ctx); break;
+<<<<<<< HEAD
       case 'announcements': (async () => { const { loadAllAnnouncements } = await import('./ui.js'); await loadAllAnnouncements(ctx); })(); break;
+=======
+      case 'announcements': (async () => { const data = await (await fetch('/api/announcements', { credentials: 'include' })).json(); if (data && data.success) { const list = document.getElementById('allAnnouncementsList'); if (list) list.innerHTML = ''; } })(); break;
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
       case 'profile': break;
     }
   }
@@ -89,6 +93,7 @@ function initEventListeners() {
   document.getElementById('cancelMessage')?.addEventListener('click', () => { hideMessageModal(); });
   document.getElementById('sendMessageBtn')?.addEventListener('click', () => { showSendMessageModal(ctx); });
   document.getElementById('submitClaimProofBtn')?.addEventListener('click', () => { showClaimProofModal(); });
+<<<<<<< HEAD
   const viewAllBtn = document.querySelector('#dashboardPage a[data-page="browse"]');
   if (viewAllBtn) {
     viewAllBtn.addEventListener('click', (e) => {
@@ -98,6 +103,8 @@ function initEventListeners() {
       document.querySelector('.nav-link[data-page="browse"]')?.classList.add('active');
     });
   }
+=======
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
 }
 
 function initActions() {
@@ -121,3 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
   init();
   window.__dashboardInstance = { submitEditItem: () => submitEditItem(ctx), sendChatMessage: () => sendChatMessage(ctx), submitClaimProof: () => submitClaimProof(ctx) };
 });
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d

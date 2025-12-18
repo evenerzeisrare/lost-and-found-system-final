@@ -4,6 +4,7 @@ export function initEventListeners(ctx) {
   el('refreshData')?.addEventListener('click', async () => { await ctx.loadDashboardData(); await ctx.loadAllData(); ctx.showNotification('Data refreshed successfully', 'success'); });
   el('logoutBtn')?.addEventListener('click', async () => { await ctx.logout(); });
   document.querySelectorAll('.nav-link').forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); const tab = link.getAttribute('data-tab'); ctx.switchTab(tab); }); });
+<<<<<<< HEAD
   document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', async (e) => {
       e.preventDefault();
@@ -15,6 +16,8 @@ export function initEventListeners(ctx) {
       if (tab === 'users') { await ctx.loadUsers(); }
     });
   });
+=======
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
   document.querySelectorAll('.action-card').forEach(card => { card.addEventListener('click', () => { const action = card.getAttribute('data-action'); ctx.handleQuickAction(action); }); });
   el('applyItemFilters')?.addEventListener('click', () => { ctx.filterItems(); });
   el('itemSearch')?.addEventListener('input', () => { ctx.debouncedFilterItems(); });

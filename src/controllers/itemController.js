@@ -214,6 +214,14 @@ async function submitClaimProof(req, res) {
       await sendMessageService(userId, item.reported_by, itemId, appendedMessage || 'Claim proof submitted', imageUrl);
       await addNotification(item.reported_by, 'Claim Proof', `A claimant submitted proof for your item "${item.item_name}"`, 'claim', itemId);
     }
+<<<<<<< HEAD
+=======
+    const [admins] = await connection.execute('SELECT id FROM users WHERE role = "admin" AND is_active = TRUE');
+    for (const admin of admins) {
+      await sendMessageService(userId, admin.id, itemId, appendedMessage || 'Claim proof submitted', imageUrl);
+      await addNotification(admin.id, 'Claim Proof', `A claimant submitted proof for item "${item.item_name}"`, 'claim', itemId);
+    }
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
     connection.release();
     res.json({ success: true });
   } catch (error) {

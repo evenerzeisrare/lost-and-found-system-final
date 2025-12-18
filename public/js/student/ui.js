@@ -22,10 +22,18 @@ export function renderItems(ctx, items, containerId) {
   if (!container) return;
   if (!items || items.length === 0) {
     container.innerHTML = `
+<<<<<<< HEAD
       <div class="empty-state">
         <i class="fas fa-box-open"></i>
         <p>No items found</p>
       </div>`;
+=======
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <i class="fas fa-box-open"></i>
+                    <p>No items found</p>
+                </div>
+            `;
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
     return;
   }
   const isMyItems = containerId.startsWith('myItemsGrid');
@@ -123,7 +131,11 @@ export function renderAnnouncements(announcements, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
   if (!announcements || announcements.length === 0) {
+<<<<<<< HEAD
     container.innerHTML = '<div class="empty-state"><i class="fas fa-bullhorn"></i>No announcements yet</div>';
+=======
+    container.innerHTML = '<p>No announcements yet.</p>';
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
     return;
   }
   container.innerHTML = announcements.map(ann => `
@@ -137,6 +149,7 @@ export function renderAnnouncements(announcements, containerId) {
             </div>
         `).join('');
 }
+<<<<<<< HEAD
 
 export async function loadAllAnnouncements(ctx) {
   try {
@@ -152,3 +165,5 @@ export async function loadAllAnnouncements(ctx) {
     renderAnnouncements([], 'allAnnouncementsList');
   }
 }
+=======
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d

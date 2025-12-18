@@ -58,6 +58,7 @@ function postGoogleCallback(req, res) {
 
 function currentUser(req, res) {
   if (req.isAuthenticated()) {
+<<<<<<< HEAD
     res.json({ 
       user: { 
         id: req.user.id, 
@@ -73,6 +74,9 @@ function currentUser(req, res) {
         contact_method: req.user.contact_method 
       } 
     });
+=======
+    res.json({ user: { id: req.user.id, full_name: req.user.full_name, email: req.user.email, role: req.user.role, student_id: req.user.student_id, avatar_url: req.user.avatar_url, is_active: req.user.is_active, phone_number: req.user.phone_number, contact_method: req.user.contact_method } });
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
   } else {
     res.status(401).json({ error: 'Not authenticated' });
   }
@@ -88,6 +92,7 @@ function logout(req, res) {
   });
 }
 
+<<<<<<< HEAD
 // NEW: Handle Google profile completion for first-time users
 async function completeGoogleProfile(req, res) {
   try {
@@ -138,3 +143,6 @@ async function completeGoogleProfile(req, res) {
 }
 
 module.exports = { register, login, googleAuth, postGoogleCallback, currentUser, logout, completeGoogleProfile };
+=======
+module.exports = { register, login, googleAuth, postGoogleCallback, currentUser, logout };
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d

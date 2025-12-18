@@ -43,6 +43,7 @@ passport.use(new GoogleStrategy({
   try {
     const connection = await pool().getConnection();
     const email = profile.emails[0].value;
+<<<<<<< HEAD
     
     if (!email.endsWith('@carsu.edu.ph') && email !== 'lostfound.devteam@gmail.com') {
       connection.release();
@@ -66,6 +67,19 @@ passport.use(new GoogleStrategy({
     // NEW USER - Return temporary profile for completion
     if (email === 'lostfound.devteam@gmail.com') {
       // Auto-create admin
+=======
+    if (!email.endsWith('@carsu.edu.ph') && email !== 'lostfound.devteam@gmail.com') {
+      connection.release();
+      return done(null, false, { message: 'Only CSU email addresses (@carsu.edu.ph) are allowed for students. Admins must use the designated admin email.' });
+    }
+    const [existingUser] = await connection.execute('SELECT * FROM users WHERE google_id = ? OR email = ?', [profile.id, email]);
+    if (existingUser.length > 0) {
+      await connection.execute('UPDATE users SET google_id = ?, avatar_url = ? WHERE id = ?', [profile.id, profile.photos[0]?.value, existingUser[0].id]);
+      connection.release();
+      return done(null, existingUser[0]);
+    }
+    if (email === 'lostfound.devteam@gmail.com') {
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
       const [result] = await connection.execute(
         `INSERT INTO users (full_name, email, google_id, avatar_url, role) VALUES (?, ?, ?, ?, 'admin')`,
         [profile.displayName, email, profile.id, profile.photos[0]?.value]
@@ -73,6 +87,7 @@ passport.use(new GoogleStrategy({
       const [newUser] = await connection.execute('SELECT * FROM users WHERE id = ?', [result.insertId]);
       connection.release();
       return done(null, newUser[0]);
+<<<<<<< HEAD
     }
     
     // Student - Return temp data for completion (don't save yet)
@@ -86,12 +101,21 @@ passport.use(new GoogleStrategy({
       role: 'student'
     });
     
+=======
+    } else {
+      connection.release();
+      return done(null, false, { message: 'Please register before logging in.' });
+    }
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
   } catch (error) {
     return done(error);
   }
 }));
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
@@ -99,10 +123,14 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (id, done) => {
   try {
     const connection = await pool().getConnection();
+<<<<<<< HEAD
     const [rows] = await connection.execute(
       'SELECT id, full_name, email, student_id, role, avatar_url, is_active, phone_number, college, program, contact_method FROM users WHERE id = ?', 
       [id]
     );
+=======
+    const [rows] = await connection.execute('SELECT id, full_name, email, student_id, role, avatar_url, is_active FROM users WHERE id = ?', [id]);
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
     connection.release();
     if (rows.length === 0) {
       return done(null, false);

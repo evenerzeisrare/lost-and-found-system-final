@@ -25,6 +25,13 @@ async function sendMessage(req, res) {
       connection.release();
       return res.status(400).json({ error: 'Receiver not found' });
     }
+<<<<<<< HEAD
+=======
+    if (req.user.role === 'admin' && receiver[0].role !== 'admin') {
+      connection.release();
+      return res.status(403).json({ error: 'Admins cannot message students' });
+    }
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
     if (receiver[0].role === 'admin' && req.user.role !== 'admin') {
       connection.release();
       return res.status(403).json({ error: 'Messaging admin is not allowed' });
@@ -36,7 +43,13 @@ async function sendMessage(req, res) {
     }
     const insertedId = await sendMessageService(sender_id, receiver_id, itemId, message, imageUrl);
     const [sender] = await connection.execute('SELECT full_name FROM users WHERE id = ?', [sender_id]);
+<<<<<<< HEAD
     await addNotification(receiver_id, 'New Message', `You have a new message from ${sender[0].full_name}`, 'message', insertedId);
+=======
+    if (receiver[0].role === 'admin') {
+      await addNotification(receiver_id, 'New Message', `You have a new message from ${sender[0].full_name}`, 'message', insertedId);
+    }
+>>>>>>> 2574b52f13985695c0aba54d0b86fa1a207b1c5d
     connection.release();
     res.json({ success: true, message: 'Message sent successfully', messageId: insertedId });
   } catch (error) {
